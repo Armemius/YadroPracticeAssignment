@@ -3,6 +3,8 @@
 #include "core/resources.hpp"
 
 #include <cstdint>
+#include <functional>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -45,27 +47,65 @@ class Dungeon final {
         [[nodiscard]] int count(const Resource &resource) const;
 
         /**
-         * @brief Returns indices of rooms adjacent to this one
-         * 
-         * @return const std::vector<uint8_t>& adjacent rooms
-         */
+        * @brief Returns indices of rooms adjacent to this one
+        * 
+        * @return const std::vector<uint8_t>& adjacent rooms
+        */
         [[nodiscard]] const std::vector<uint8_t> &adjacent_rooms() const noexcept;
 
+        /**
+         * @brief Returns info about available resources at the room
+         * 
+         * @return const std::unordered_map<Resource, uint8_t>& available resources
+         */
+        [[nodiscard]] const std::unordered_map<Resource, uint8_t> &resources() const noexcept;
+
        private:
-        bool resources_harvested_{false};                  ///< Show if resources were already harvested in the room
         uint8_t idx_;                                      ///< Index of the room
         std::unordered_map<Resource, uint8_t> resources_;  ///< Current amount of resources in the room
         std::vector<uint8_t> adjacent_rooms_;              ///< Indices of rooms where you can get from current room
+
+        friend class Dungeon;
+    };
+
+    struct RoomView {
+        /// Index of the room
+        std::optional<uint8_t> idx;
+
+        ///Information about adjacent rooms
+        std::optional<std::reference_wrapper<const std::vector<uint8_t>>> adjacent_rooms;
+
+        /// Resources available at the room
+        std::optional<std::reference_wrapper<const std::unordered_map<Resource, uint8_t>>> resources;
     };
 
     /**
-     * @brief Returns room by given index
+     * @brief Returns room view by given index
      * 
-     * @param index index of the room
+     * @param room index of the room
+     * @param player player to provide info to
      * @exception std::out_of_range throws if given room is not found
      * @return Room& lvalue reference to the room
      */
-    [[nodiscard]] Room &operator[](uint8_t index);
+    [[nodiscard]] RoomView getRoom(const Player &player, uint8_t room) const;
+
+    /**
+     * @brief Moves player to another room
+     * 
+     * @param player player to move
+     * @param room target room
+     * @exception std::logic_error throw if action is not permitted
+     */
+    void move(Player &player, uint8_t room);
+
+    /**
+     * @brief Harvests resources for the player
+     * 
+     * @param player player that should harvest resources
+     * @param resource resource to harvest
+     * @exception std::logic_error throw if action is not permitted
+     */
+    void harvest(Player &player, const Resource &resource);
 
     /**
      * @brief Construct a new Dungeon object
