@@ -6,16 +6,15 @@
 
 #include <cstdint>
 #include <memory>
-#include <optional>
+#include <unordered_set>
 
 namespace tvb::core {
 
 /// Facade class representing the game flow
 class Game {
    private:
-    std::unique_ptr<Player> player_;                       ///< Current game's player
-    std::unique_ptr<Dungeon> dungeon_;                     ///< Dungeon in which the game takes place
-    std::optional<ResourceType> last_harvested_resource_;  ///< Last harvested resource type
+    std::unique_ptr<Player> player_;    ///< Current game's player
+    std::unique_ptr<Dungeon> dungeon_;  ///< Dungeon in which the game takes place
 
    public:
     struct ResourcesState {
@@ -26,9 +25,9 @@ class Game {
     };
 
     struct RoomState {
-        uint16_t room_idx;                                    ///< Index of the room
-        ResourcesState resources;                             ///< Resources present at the room
-        std::optional<ResourceType> last_harvested_resource;  ///< Last harvested resource if applicable
+        uint16_t room_idx;                                 ///< Index of the room
+        ResourcesState resources;                          ///< Resources present at the room
+        std::unordered_set<Resource> harvested_resources;  ///< Harvested resources in that room
     };
 
     struct PlayerState {

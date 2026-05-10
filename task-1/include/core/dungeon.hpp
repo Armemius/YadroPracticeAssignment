@@ -6,6 +6,7 @@
 #include <functional>
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace tvb::core {
@@ -22,7 +23,7 @@ class Dungeon final {
 
         /**
          * @brief Returns index of the room
-         * 
+         *
          * @return uint8_t room index
          */
         [[nodiscard]] uint8_t idx() const;
@@ -58,10 +59,17 @@ class Dungeon final {
          */
         [[nodiscard]] const std::unordered_map<Resource, uint8_t> &resources() const noexcept;
 
+        /**
+         * @brief Returns info about harvested resources at the room
+         * @return const std::unordered_set<Resource>& harvested resources
+         */
+        [[nodiscard]] const std::unordered_set<Resource> &harvested_resources() const noexcept;
+
        private:
-        uint8_t idx_;                                      ///< Index of the room
-        std::unordered_map<Resource, uint8_t> resources_;  ///< Current amount of resources in the room
-        std::vector<uint8_t> adjacent_rooms_;              ///< Indices of rooms where you can get from current room
+        uint8_t idx_;                                       ///< Index of the room
+        std::unordered_map<Resource, uint8_t> resources_;   ///< Current amount of resources in the room
+        std::unordered_set<Resource> harvested_resources_;  ///< Set of harvested resources in the room
+        std::vector<uint8_t> adjacent_rooms_;               ///< Indices of rooms where you can get from current room
 
         friend class Dungeon;
     };

@@ -39,6 +39,10 @@ const std::unordered_map<Resource, uint8_t> &Dungeon::Room::resources() const no
     return resources_;
 }
 
+const std::unordered_set<Resource> &Dungeon::Room::harvested_resources() const noexcept {
+    return harvested_resources_;
+}
+
 Dungeon::RoomView Dungeon::get_available_room_info(const Player &player, uint8_t room) const {
     const Room &room_info = rooms_.at(room);
     auto level = static_cast<std::underlying_type_t<RoomKnowledge>>(player.knowledge_.access(room));
@@ -128,8 +132,9 @@ void Dungeon::harvest(Player &player, const Resource &resource) {
         --player.food_left_;
     }
 
-    --room.resources_.at(resource);
-    ++player.harvested_resources_[resource];
+    player.harvested_resources_[resource] += room.resources_.at(resource);
+    room.resources_.at(resource) = 0;
+    room.harvested_resources_.insert(resource);
 }
 
 void Dungeon::update_knowledge(Player &player, uint8_t room) const {

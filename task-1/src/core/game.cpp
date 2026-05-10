@@ -41,7 +41,7 @@ Game::RoomState Game::player_room_state() const {
                                    .gold_amount = room.count(Resources::GOLD),
                                    .gems_amount = room.count(Resources::GEM),
                                    .experience_amount = room.count(Resources::EXPERIENCE)},
-                     .last_harvested_resource = last_harvested_resource_};
+                     .harvested_resources = room.harvested_resources()};
 }
 
 Game::PlayerState Game::player_state() const noexcept {
@@ -58,12 +58,10 @@ Dungeon::RoomView Game::get_room_info(uint8_t room) const {
 
 void Game::move_player(uint8_t room) {
     dungeon_->move(*player_, room);
-    last_harvested_resource_ = std::nullopt;
 }
 
 void Game::harvest(const Resource &resource) {
     dungeon_->harvest(*player_, resource);
-    last_harvested_resource_ = resource.type();
 }
 
 }  // namespace tvb::core
