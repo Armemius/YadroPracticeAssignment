@@ -83,7 +83,7 @@ class Dungeon final {
      * @param room index of the room
      * @param player player to provide info to
      * @exception std::out_of_range throws if given room is not found
-     * @return Room& lvalue reference to the room
+     * @return Dungeon::RoomView available information for the room& lvalue reference to the room
      */
     [[nodiscard]] RoomView get_room(const Player &player, uint8_t room) const;
 
