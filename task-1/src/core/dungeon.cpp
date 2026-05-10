@@ -24,7 +24,7 @@ bool Dungeon::Room::has(const Resource &resource) const {
     return resources_.contains(resource) && resources_.at(resource) > 0;
 }
 
-int Dungeon::Room::count(const Resource &resource) const {
+uint16_t Dungeon::Room::count(const Resource &resource) const {
     if (!resources_.contains(resource)) {
         return 0;
     }
@@ -39,7 +39,7 @@ const std::unordered_map<Resource, uint8_t> &Dungeon::Room::resources() const no
     return resources_;
 }
 
-Dungeon::RoomView Dungeon::get_room(const Player &player, uint8_t room) const {
+Dungeon::RoomView Dungeon::get_available_room_info(const Player &player, uint8_t room) const {
     const Room &room_info = rooms_.at(room);
     auto level = static_cast<std::underlying_type_t<RoomKnowledge>>(player.knowledge_.access(room));
     constexpr auto KNOWN_LEVEL = static_cast<std::underlying_type_t<RoomKnowledge>>(RoomKnowledge::KNOWN);
@@ -67,6 +67,13 @@ Dungeon::RoomView Dungeon::get_room(const Player &player, uint8_t room) const {
     }
 
     return {.idx = index, .adjacent_rooms = adjacent_rooms, .resources = resources};
+}
+
+const Dungeon::Room &Dungeon::get_curent_room_info(const Player &player) const {
+    if (!rooms_.contains(player.room())) [[unlikely]] {
+        throw std::logic_error("Player's room is non-existent");
+    }
+    return rooms_.at(player.room());
 }
 
 Dungeon::Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {}

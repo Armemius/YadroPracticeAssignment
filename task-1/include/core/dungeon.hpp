@@ -42,7 +42,7 @@ class Dungeon final {
          * @param resource resource to check
          * @return int amount of resource available
          */
-        [[nodiscard]] int count(const Resource &resource) const;
+        [[nodiscard]] uint16_t count(const Resource &resource) const;
 
         /**
         * @brief Returns indices of rooms adjacent to this one
@@ -78,14 +78,23 @@ class Dungeon final {
     };
 
     /**
-     * @brief Returns room view by given index
+     * @brief Returns available room info for given player
      * 
      * @param room index of the room
      * @param player player to provide info to
      * @exception std::out_of_range throws if given room is not found
      * @return Dungeon::RoomView available information for the room& lvalue reference to the room
      */
-    [[nodiscard]] RoomView get_room(const Player &player, uint8_t room) const;
+    [[nodiscard]] RoomView get_available_room_info(const Player &player, uint8_t room) const;
+
+    /**
+     * @brief Returns room the player is currently in
+     * 
+     * @param player player to provide info to
+     * @exception std::logic_error throws if given room is not found
+     * @return const Dungeon::Room& information about the room
+     */
+    [[nodiscard]] const Room &get_curent_room_info(const Player &player) const;
 
     /**
      * @brief Moves player to another room
