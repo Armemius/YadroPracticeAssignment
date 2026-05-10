@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
@@ -80,7 +81,22 @@ const Dungeon::Room &Dungeon::get_curent_room_info(const Player &player) const {
     return rooms_.at(player.room());
 }
 
-Dungeon::Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {}
+Dungeon::Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {
+    // Connect adjacent rooms
+    auto insert_room_if_not_present = [](std::vector<uint8_t> &rooms, uint8_t idx) {
+        if (!std::ranges::binary_search(rooms, idx)) {
+            rooms.push_back(idx);
+            std::ranges::sort(rooms);
+            // TODO: armemius - rewrite this hideous thing
+        }
+    };
+
+    for (auto &[src_idx, room] : rooms_) {
+        for (auto dest_idx : room.adjacent_rooms()) {
+            insert_room_if_not_present(rooms_.at(dest_idx).adjacent_rooms_, src_idx);
+        }
+    }
+}
 
 void Dungeon::move(Player &player, uint8_t target_room) {
     if (!player.alive()) [[unlikely]] {
