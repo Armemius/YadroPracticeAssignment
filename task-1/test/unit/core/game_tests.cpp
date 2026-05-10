@@ -103,9 +103,9 @@ TEST(GameTest, HarvestUpdatesRoomStatePlayerStateAndUsedResources) {
     EXPECT_EQ(player_state.resources.gold_amount, 2);
     EXPECT_EQ(player_state.resources.gems_amount, 0);
     EXPECT_EQ(player_state.resources.experience_amount, 0);
-    EXPECT_EQ(player_state.total_value, 44);
+    EXPECT_EQ(player_state.total_value, 22);
     EXPECT_EQ(game.player_amount(Resources::GOLD), 2);
-    EXPECT_EQ(game.player_value(), 44);
+    EXPECT_EQ(game.player_value(), 22);
 }
 
 TEST(GameTest, RepeatedHarvestUsesCoreFoodAndScoringRules) {
@@ -123,7 +123,7 @@ TEST(GameTest, RepeatedHarvestUsesCoreFoodAndScoringRules) {
     EXPECT_EQ(player_state.resources.gold_amount, 2);
     EXPECT_EQ(player_state.resources.gems_amount, 1);
     EXPECT_EQ(player_state.resources.experience_amount, 0);
-    EXPECT_EQ(player_state.total_value, 82);
+    EXPECT_EQ(player_state.total_value, 43);
 
     auto room_state = game.player_room_state();
     EXPECT_EQ(room_state.harvested_resources.size(), 3);

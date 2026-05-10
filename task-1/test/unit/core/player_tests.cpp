@@ -84,10 +84,10 @@ TEST(PlayerTest, TracksHarvestedAmountsAndScore) {
     EXPECT_EQ(player.amount(Resources::GOLD), 2);
     EXPECT_EQ(player.amount(Resources::IRON), 2);
     EXPECT_EQ(player.amount(Resources::GEM), 0);
-    EXPECT_EQ(player.value(), 58);
+    EXPECT_EQ(player.value(), 30);
 }
 
-TEST(PlayerTest, DoublesOnlyTargetResourceTypeInScore) {
+TEST(PlayerTest, ScoresTargetResourceAtFullValueAndOthersAtRoundedHalfValue) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GEM, 10};
 
@@ -100,7 +100,7 @@ TEST(PlayerTest, DoublesOnlyTargetResourceTypeInScore) {
     EXPECT_EQ(player.amount(Resources::IRON), 2);
     EXPECT_EQ(player.amount(Resources::GEM), 1);
     EXPECT_EQ(player.amount(Resources::EXPERIENCE), 0);
-    EXPECT_EQ(player.value(), 82);
+    EXPECT_EQ(player.value(), 43);
 }
 
 TEST(PlayerTest, ScoresExperienceAsTargetResource) {
@@ -111,7 +111,7 @@ TEST(PlayerTest, ScoresExperienceAsTargetResource) {
     dungeon.harvest(player, Resources::EXPERIENCE);
 
     EXPECT_EQ(player.amount(Resources::EXPERIENCE), 3);
-    EXPECT_EQ(player.value(), 6);
+    EXPECT_EQ(player.value(), 3);
 }
 
 TEST(PlayerTest, FailedHarvestDoesNotChangeAmountOrScore) {

@@ -43,7 +43,7 @@ TEST(ParserTest, ParsesValidGameInput) {
     EXPECT_EQ(first_room.resources.experience_amount, 15);
 
     game.harvest(core::Resources::GEM);
-    EXPECT_EQ(game.player_value(), 46);
+    EXPECT_EQ(game.player_value(), 23);
 }
 
 TEST(ParserTest, AllowsEntranceWithoutResourceColumns) {
