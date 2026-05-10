@@ -402,5 +402,55 @@ TEST(DungeonTest, ProvidesCorrectPlayerKnowledgeLevel) {
     EXPECT_EQ(dungeon.get_room_knowledge(player, 5), RoomKnowledge::KNOWN);
 }
 
+TEST(DungeonTest, ProvidesCorrectRoomsRangesByKnowledge) {
+    auto dungeon = make_big_test_dungeon();
+    Player player{ResourceType::GOLD, 6};
+    dungeon.init_player(player);
+
+    {
+        auto [begin, end] = tvb::core::Dungeon::known_rooms(player);
+        std::vector known_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{4};
+        EXPECT_EQ(known_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = tvb::core::Dungeon::visible_rooms(player);
+        std::vector visible_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{1, 2, 3};
+        EXPECT_EQ(visible_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = tvb::core::Dungeon::visited_rooms(player);
+        std::vector visited_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{0};
+        EXPECT_EQ(visited_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = tvb::core::Dungeon::nonvisited_rooms(player);
+        std::vector nonvisited_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{1, 2, 3, 4};
+        EXPECT_EQ(nonvisited_rooms, expected_rooms);
+    }
+    dungeon.move(player, 1);
+    {
+        auto [begin, end] = tvb::core::Dungeon::known_rooms(player);
+        std::vector known_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{5};
+        EXPECT_EQ(known_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = tvb::core::Dungeon::visible_rooms(player);
+        std::vector visible_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{2, 3, 4};
+        EXPECT_EQ(visible_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = tvb::core::Dungeon::nonvisited_rooms(player);
+        std::vector nonvisited_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{2, 3, 4, 5};
+        EXPECT_EQ(nonvisited_rooms, expected_rooms);
+    }
+}
+
 }  // namespace
 }  // namespace tvb::core

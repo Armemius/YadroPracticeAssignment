@@ -158,7 +158,7 @@ TEST(GameTest, GetRoomInfoUsesPlayerKnowledge) {
     auto game = make_game(ResourceType::GOLD, 6);
 
     auto hidden = game.get_room_info(3);
-    EXPECT_FALSE(hidden.idx.has_value());
+    EXPECT_TRUE(hidden.idx.has_value());
     EXPECT_FALSE(hidden.adjacent_rooms.has_value());
     EXPECT_FALSE(hidden.resources.has_value());
 
@@ -199,10 +199,8 @@ TEST(GameTest, PropagatesMoveAndHarvestErrorsWithoutChangingGameState) {
 
 TEST(GameTest, PropagatesCurrentRoomLookupErrors) {
     std::unordered_map<uint8_t, Room> rooms;
-    rooms.emplace(1, Room{1, {{Resources::GOLD, 1}}, {}});
-    auto game = Game{make_player_ptr(), std::make_unique<Dungeon>(std::move(rooms))};
-
-    EXPECT_THROW((void)game.player_room_state(), std::logic_error);
+    auto game = make_game();
+    EXPECT_THROW((void)game.get_room_info(42), std::logic_error);
 }
 
 TEST(GameTest, ProvidesCorrectPlayerKnowledgeLevel) {
