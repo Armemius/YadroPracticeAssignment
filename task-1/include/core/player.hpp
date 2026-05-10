@@ -88,6 +88,7 @@ class MergedRoomIndexIterator {
     RoomIndexIterator second_;
     RoomIndexIterator second_end_;
 };
+
 static_assert(std::input_iterator<MergedRoomIndexIterator>);
 
 /// Class representing player knowledge of the dungeon
@@ -100,6 +101,15 @@ class PlayerKnowledge final {
      * @return RoomKnowledge player's available knowledge about the room
      */
     [[nodiscard]] RoomKnowledge access(uint8_t room) const;
+
+    /**
+     * @brief Checks if player had already harvested certain room
+     * 
+     * @param room Room to check
+     * @return true If the room was already harvested
+     * @return false If the room was not harvested yet
+     */
+    [[nodiscard]] bool harvested(uint8_t room) const;
 
     /**
      * @brief Returns range of known rooms for the player

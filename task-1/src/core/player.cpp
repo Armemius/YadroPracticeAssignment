@@ -106,6 +106,10 @@ RoomKnowledge PlayerKnowledge::access(uint8_t room) const {
     return knowledge_indices_.at(room)->first;
 }
 
+bool PlayerKnowledge::harvested(uint8_t room) const {
+    return harvested_rooms_.contains(room);
+}
+
 void PlayerKnowledge::promote(uint8_t room, RoomKnowledge level) {
     if (!knowledge_indices_.contains(room)) {
         auto [pos, _] = accesses_.insert({level, room});
