@@ -2,7 +2,10 @@
 
 #include "core/resources.hpp"
 
+#include <cstddef>
 #include <cstdint>
+#include <iterator>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -15,16 +18,116 @@ enum class RoomKnowledge {
     VISITED = 3   //< Player can see all the information about the room
 };
 
+/// Iterator wrapper for ranges of rooms representing visibility levels
+class RoomIndexIterator {
+   public:
+    using value_type = uint8_t;
+    using reference = uint8_t;
+    using pointer = void;
+    using difference_type = ptrdiff_t;
+    using iterator_category = std::bidirectional_iterator_tag;
+
+    RoomIndexIterator() = default;
+
+    /**
+     * @brief Construct a new Room Index Iterator object
+     *
+     * @param it iterator for the knowledge set
+     */
+    explicit RoomIndexIterator(std::set<std::pair<RoomKnowledge, uint8_t>>::iterator it);
+
+    uint8_t operator*() const;
+
+    RoomIndexIterator &operator++();
+
+    RoomIndexIterator operator++(int);
+
+    RoomIndexIterator &operator--();
+
+    RoomIndexIterator operator--(int);
+
+    friend bool operator==(const RoomIndexIterator &lhs, const RoomIndexIterator &rhs);
+
+    friend bool operator!=(const RoomIndexIterator &lhs, const RoomIndexIterator &rhs);
+
+   private:
+    std::set<std::pair<RoomKnowledge, uint8_t>>::iterator iterator_;
+};
+
+static_assert(std::bidirectional_iterator<RoomIndexIterator>);
+
+/// Iterator that merges two sorted room-index ranges into one sorted room-index stream
+class MergedRoomIndexIterator {
+   public:
+    using value_type = uint8_t;
+    using reference = uint8_t;
+    using pointer = void;
+    using difference_type = ptrdiff_t;
+    using iterator_category = std::input_iterator_tag;
+
+    MergedRoomIndexIterator() = default;
+
+    MergedRoomIndexIterator(RoomIndexIterator first_begin, RoomIndexIterator first_end, RoomIndexIterator second_begin,
+                            RoomIndexIterator second_end);
+
+    uint8_t operator*() const;
+
+    MergedRoomIndexIterator &operator++();
+
+    MergedRoomIndexIterator operator++(int);
+
+    friend bool operator==(const MergedRoomIndexIterator &lhs, const MergedRoomIndexIterator &rhs);
+
+    friend bool operator!=(const MergedRoomIndexIterator &lhs, const MergedRoomIndexIterator &rhs);
+
+   private:
+    [[nodiscard]] bool should_take_first() const;
+
+    RoomIndexIterator first_;
+    RoomIndexIterator first_end_;
+    RoomIndexIterator second_;
+    RoomIndexIterator second_end_;
+};
+static_assert(std::input_iterator<MergedRoomIndexIterator>);
+
 /// Class representing player knowledge of the dungeon
 class PlayerKnowledge final {
    public:
     /**
      * @brief Check player's access to specified room
-     * 
+     *
      * @param room index of the roomx
      * @return RoomKnowledge player's available knowledge about the room
      */
     [[nodiscard]] RoomKnowledge access(uint8_t room) const;
+
+    /**
+     * @brief Returns range of known rooms for the player
+     *
+     * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> known_rooms() const;
+
+    /**
+     * @brief Returns range of visible rooms for the player
+     *
+     * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> visible_rooms() const;
+
+    /**
+     * @brief Returns range of visited rooms for the player
+     *
+     * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> visited_rooms() const;
+
+    /**
+     * @brief Returns range of nonvisited rooms for the player
+     *
+     * @return std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> nonvisited_rooms() const;
 
    private:
     /**
@@ -35,7 +138,11 @@ class PlayerKnowledge final {
      */
     void promote(uint8_t room, RoomKnowledge level);
 
-    std::unordered_map<uint8_t, RoomKnowledge> accesses_;  ///< Rooms access for the player
+    /// Indicies for faster checks for specific rooms
+    std::unordered_map<uint8_t, std::set<std::pair<RoomKnowledge, uint8_t>>::iterator> knowledge_indices_;
+
+    /// Ordered storage for room knowledge
+    std::set<std::pair<RoomKnowledge, uint8_t>> accesses_;
 
     std::unordered_set<uint8_t> harvested_rooms_;  ///< Rooms where player has harvested resources
 
