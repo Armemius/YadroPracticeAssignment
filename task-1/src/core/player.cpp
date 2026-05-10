@@ -42,13 +42,14 @@ uint8_t Player::room() const noexcept {
 }
 
 uint32_t Player::value() const noexcept {
-    return std::accumulate(harvested_resources_.cbegin(), harvested_resources_.cend(), 0U,
-                           [&](auto acc, const auto &current) {
-                               if (current.first.type() == target_resource_) {
-                                   return acc + (current.second * current.first.value() * 2);
-                               }
-                               return acc + (current.second * current.first.value());
-                           });
+    // Recheck info about value calculation and adjust if needed
+    return std::accumulate(
+        harvested_resources_.cbegin(), harvested_resources_.cend(), 0U, [&](auto acc, const auto &current) {
+            if (current.first.type() == target_resource_) {
+                return acc + (current.second * current.first.value());
+            }
+            return acc + (current.second * ((current.first.value() / 2) + (current.first.value() % 2)));
+        });
 }
 
 uint16_t Player::amount(const Resource &resource) const {
