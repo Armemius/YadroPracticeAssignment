@@ -52,6 +52,17 @@ Dungeon make_dungeon_with_inconsistent_adjacent_rooms() {
     return Dungeon{std::move(rooms)};
 }
 
+Dungeon make_big_test_dungeon() {
+    std::unordered_map<uint8_t, Room> rooms;
+    rooms.emplace(0, Room{0, {}, {1, 2, 3}});
+    rooms.emplace(1, Room{1, {}, {0, 4, 2}});
+    rooms.emplace(2, Room{2, {}, {0, 1}});
+    rooms.emplace(3, Room{3, {}, {0, 4}});
+    rooms.emplace(4, Room{4, {}, {1, 3, 5}});
+    rooms.emplace(5, Room{5, {}, {4}});
+    return Dungeon{std::move(rooms)};
+}
+
 TEST(DungeonTest, RoomReportsResourcePresenceCountsAndTopology) {
     Room room{7, {{Resources::IRON, 2}, {Resources::GOLD, 0}}, {1, 9, 3}};
 
@@ -370,6 +381,25 @@ TEST(DungeonTest, AdjacentRoomsInfoIsConsistentBetweenRooms) {
         const auto &entrance_room = dungeon.get_curent_room_info(player);
         EXPECT_EQ(entrance_room.adjacent_rooms(), (std::vector<uint8_t>{0, 3}));
     }
+}
+
+TEST(DungeonTest, ProvidesCorrectPlayerKnowledgeLevel) {
+    auto dungeon = make_big_test_dungeon();
+    Player player{ResourceType::GOLD, 6};
+    dungeon.init_player(player);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 0), RoomKnowledge::VISITED);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 1), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 4), RoomKnowledge::KNOWN);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 5), RoomKnowledge::UNKNOWN);
+    dungeon.move(player, 1);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 0), RoomKnowledge::VISITED);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 1), RoomKnowledge::VISITED);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 4), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.get_room_knowledge(player, 5), RoomKnowledge::KNOWN);
 }
 
 }  // namespace
