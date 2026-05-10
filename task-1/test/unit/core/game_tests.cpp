@@ -220,5 +220,53 @@ TEST(GameTest, ProvidesCorrectPlayerKnowledgeLevel) {
     EXPECT_EQ(game.get_room_knowledge(5), RoomKnowledge::KNOWN);
 }
 
+TEST(GameTest, ProvidesCorrectRoomsRangesByKnowledge) {
+    auto game = make_big_game();
+
+    {
+        auto [begin, end] = game.known_rooms();
+        std::vector known_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{4};
+        EXPECT_EQ(known_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = game.visible_rooms();
+        std::vector visible_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{1, 2, 3};
+        EXPECT_EQ(visible_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = game.visited_rooms();
+        std::vector visited_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{0};
+        EXPECT_EQ(visited_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = game.nonvisited_rooms();
+        std::vector nonvisited_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{1, 2, 3, 4};
+        EXPECT_EQ(nonvisited_rooms, expected_rooms);
+    }
+    game.move_player(1);
+    {
+        auto [begin, end] = game.known_rooms();
+        std::vector known_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{5};
+        EXPECT_EQ(known_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = game.visible_rooms();
+        std::vector visible_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{2, 3, 4};
+        EXPECT_EQ(visible_rooms, expected_rooms);
+    }
+    {
+        auto [begin, end] = game.nonvisited_rooms();
+        std::vector nonvisited_rooms(begin, end);
+        std::vector<uint8_t> expected_rooms{2, 3, 4, 5};
+        EXPECT_EQ(nonvisited_rooms, expected_rooms);
+    }
+}
+
 }  // namespace
 }  // namespace tvb::core
