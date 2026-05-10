@@ -80,6 +80,10 @@ const Dungeon::Room &Dungeon::get_curent_room_info(const Player &player) const {
     return rooms_.at(player.room());
 }
 
+RoomKnowledge Dungeon::get_room_knowledge(const Player &player, uint8_t room) {
+    return player.knowledge_.access(room);
+}
+
 Dungeon::Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {
     // Connect adjacent rooms
     auto insert_room_if_not_present = [](std::vector<uint8_t> &rooms, uint8_t idx) {
@@ -149,6 +153,11 @@ void Dungeon::harvest(Player &player, const Resource &resource) {
     player.harvested_resources_[resource] += room.resources_.at(resource);
     room.resources_.at(resource) = 0;
     room.harvested_resources_.insert(resource);
+}
+
+void Dungeon::init_player(Player &player) {
+    player.current_room_idx_ = 0;
+    update_knowledge(player, 0);
 }
 
 void Dungeon::update_knowledge(Player &player, uint8_t room) const {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/player.hpp"
 #include "core/resources.hpp"
 
 #include <cstdint>
@@ -105,6 +106,15 @@ class Dungeon final {
     [[nodiscard]] const Room &get_curent_room_info(const Player &player) const;
 
     /**
+     * @brief Get the room knowledge object
+     * 
+     * @param player player to provide info to
+     * @param room room to provide info about 
+     * @return RoomKnowledge 
+     */
+    [[nodiscard]] static RoomKnowledge get_room_knowledge(const Player &player, uint8_t room);
+
+    /**
      * @brief Moves player to another room
      * 
      * @param player player to move
@@ -121,6 +131,12 @@ class Dungeon final {
      * @exception std::logic_error throw if action is not permitted
      */
     void harvest(Player &player, const Resource &resource);
+
+    /**
+     * @brief Places player into the dungeon
+     * 
+     */
+    void init_player(Player &player);
 
     /**
      * @brief Construct a new Dungeon object
