@@ -43,6 +43,15 @@ Dungeon make_dungeon_with_zero_quantity_resource() {
     return Dungeon{std::move(rooms)};
 }
 
+Dungeon make_dungeon_with_inconsistent_adjacent_rooms() {
+    std::unordered_map<uint8_t, Room> rooms;
+    rooms.emplace(0, Room{0, {}, {2}});
+    rooms.emplace(1, Room{1, {}, {0}});
+    rooms.emplace(2, Room{1, {}, {3}});
+    rooms.emplace(3, Room{1, {}, {0}});
+    return Dungeon{std::move(rooms)};
+}
+
 TEST(DungeonTest, RoomReportsResourcePresenceCountsAndTopology) {
     Room room{7, {{Resources::IRON, 2}, {Resources::GOLD, 0}}, {1, 9, 3}};
 
@@ -148,12 +157,7 @@ TEST(DungeonTest, RejectsImpossibleMoveWithoutConsumingFood) {
 }
 
 TEST(DungeonTest, RejectsMoveToNonexistentRoomWithoutConsumingFood) {
-    auto dungeon = make_dungeon_with_missing_adjacent_room();
-    Player player{ResourceType::GOLD, 6};
-
-    EXPECT_THROW(dungeon.move(player, 9), std::logic_error);
-    EXPECT_EQ(player.room(), 0);
-    EXPECT_EQ(player.food(), 6);
+    EXPECT_THROW(make_dungeon_with_missing_adjacent_room(), std::out_of_range);
 }
 
 TEST(DungeonTest, RejectsMoveWhenCurrentRoomDoesNotExist) {
@@ -349,6 +353,23 @@ TEST(DungeonTest, ThrowsOnNonexistentCurrentRoom) {
     Player player{ResourceType::GOLD, 6};
 
     EXPECT_THROW((void)dungeon.get_curent_room_info(player), std::logic_error);
+}
+
+TEST(DungeonTest, AdjacentRoomsInfoIsConsistentBetweenRooms) {
+    auto dungeon = make_dungeon_with_inconsistent_adjacent_rooms();
+    Player player{ResourceType::GOLD, 6};
+
+    {
+        const auto &entrance_room = dungeon.get_curent_room_info(player);
+        EXPECT_EQ(entrance_room.adjacent_rooms(), (std::vector<uint8_t>{1, 2, 3}));
+    }
+
+    dungeon.move(player, 2);
+
+    {
+        const auto &entrance_room = dungeon.get_curent_room_info(player);
+        EXPECT_EQ(entrance_room.adjacent_rooms(), (std::vector<uint8_t>{0, 3}));
+    }
 }
 
 }  // namespace
