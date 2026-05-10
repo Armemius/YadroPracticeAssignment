@@ -39,7 +39,7 @@ const std::unordered_map<Resource, uint8_t> &Dungeon::Room::resources() const no
     return resources_;
 }
 
-Dungeon::RoomView Dungeon::getRoom(const Player &player, uint8_t room) const {
+Dungeon::RoomView Dungeon::get_room(const Player &player, uint8_t room) const {
     const Room &room_info = rooms_.at(room);
     auto level = static_cast<std::underlying_type_t<RoomKnowledge>>(player.knowledge_.access(room));
     constexpr auto KNOWN_LEVEL = static_cast<std::underlying_type_t<RoomKnowledge>>(RoomKnowledge::KNOWN);

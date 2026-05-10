@@ -61,7 +61,7 @@ TEST(DungeonTest, ExposesOnlyInformationAllowedByPlayerKnowledge) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    auto entrance = dungeon.getRoom(player, 0);
+    auto entrance = dungeon.get_room(player, 0);
     ASSERT_TRUE(entrance.idx.has_value());
     EXPECT_EQ(*entrance.idx, 0);
     EXPECT_TRUE(entrance.adjacent_rooms.has_value());
@@ -69,17 +69,17 @@ TEST(DungeonTest, ExposesOnlyInformationAllowedByPlayerKnowledge) {
 
     dungeon.move(player, 1);
 
-    auto visited = dungeon.getRoom(player, 1);
+    auto visited = dungeon.get_room(player, 1);
     ASSERT_TRUE(visited.idx.has_value());
     EXPECT_TRUE(visited.adjacent_rooms.has_value());
     EXPECT_TRUE(visited.resources.has_value());
 
-    auto visible = dungeon.getRoom(player, 2);
+    auto visible = dungeon.get_room(player, 2);
     ASSERT_TRUE(visible.idx.has_value());
     EXPECT_TRUE(visible.adjacent_rooms.has_value());
     EXPECT_FALSE(visible.resources.has_value());
 
-    auto known = dungeon.getRoom(player, 3);
+    auto known = dungeon.get_room(player, 3);
     ASSERT_TRUE(known.idx.has_value());
     EXPECT_FALSE(known.adjacent_rooms.has_value());
     EXPECT_FALSE(known.resources.has_value());
@@ -89,7 +89,7 @@ TEST(DungeonTest, UnknownExistingRoomHidesAllInformation) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    auto hidden = dungeon.getRoom(player, 3);
+    auto hidden = dungeon.get_room(player, 3);
 
     EXPECT_FALSE(hidden.idx.has_value());
     EXPECT_FALSE(hidden.adjacent_rooms.has_value());
@@ -100,7 +100,7 @@ TEST(DungeonTest, CurrentRoomIsFullyVisibleEvenBeforeKnowledgeWasUpdated) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    auto current = dungeon.getRoom(player, player.room());
+    auto current = dungeon.get_room(player, player.room());
 
     ASSERT_TRUE(current.idx.has_value());
     EXPECT_EQ(*current.idx, 0);
@@ -112,7 +112,7 @@ TEST(DungeonTest, GetRoomThrowsForNonexistentRoom) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    EXPECT_THROW((void)dungeon.getRoom(player, 99), std::out_of_range);
+    EXPECT_THROW((void)dungeon.get_room(player, 99), std::out_of_range);
 }
 
 TEST(DungeonTest, MovesAcrossUnsortedAdjacentRoomsAndConsumesFood) {
@@ -193,14 +193,14 @@ TEST(DungeonTest, HarvestDecrementsResourcesAndChargesOnlyRepeatedRoomHarvests) 
     dungeon.move(player, 1);
     dungeon.harvest(player, Resources::GOLD);
 
-    auto first_harvest_view = dungeon.getRoom(player, 1);
+    auto first_harvest_view = dungeon.get_room(player, 1);
     ASSERT_TRUE(first_harvest_view.resources.has_value());
     EXPECT_EQ(first_harvest_view.resources->get().at(Resources::GOLD), 1);
     EXPECT_EQ(player.food(), 5);
 
     dungeon.harvest(player, Resources::GOLD);
 
-    auto second_harvest_view = dungeon.getRoom(player, 1);
+    auto second_harvest_view = dungeon.get_room(player, 1);
     ASSERT_TRUE(second_harvest_view.resources.has_value());
     EXPECT_EQ(second_harvest_view.resources->get().at(Resources::GOLD), 0);
     EXPECT_EQ(player.food(), 4);
@@ -256,7 +256,7 @@ TEST(DungeonTest, RejectsHarvestForDeadPlayerOutsideEntranceWithoutChangingResou
     EXPECT_THROW(dungeon.harvest(player, Resources::GOLD), std::logic_error);
     EXPECT_EQ(player.amount(Resources::GOLD), 0);
 
-    auto room = dungeon.getRoom(player, 1);
+    auto room = dungeon.get_room(player, 1);
     ASSERT_TRUE(room.resources.has_value());
     EXPECT_EQ(room.resources->get().at(Resources::GOLD), 2);
 }
@@ -271,7 +271,7 @@ TEST(DungeonTest, RejectsHarvestAtEntranceWithNoFoodWithoutChangingResources) {
     EXPECT_THROW(dungeon.harvest(player, Resources::GOLD), std::logic_error);
     EXPECT_EQ(player.amount(Resources::GOLD), 0);
 
-    auto entrance = dungeon.getRoom(player, 0);
+    auto entrance = dungeon.get_room(player, 0);
     ASSERT_TRUE(entrance.resources.has_value());
     EXPECT_EQ(entrance.resources->get().at(Resources::GOLD), 1);
 }
@@ -306,7 +306,7 @@ TEST(DungeonTest, RejectsHarvestOfZeroQuantityResourceWithoutConsumingFood) {
     EXPECT_EQ(player.food(), 5);
     EXPECT_EQ(player.amount(Resources::GOLD), 0);
 
-    auto room = dungeon.getRoom(player, 1);
+    auto room = dungeon.get_room(player, 1);
     ASSERT_TRUE(room.resources.has_value());
     EXPECT_EQ(room.resources->get().at(Resources::GOLD), 0);
 }
@@ -324,7 +324,7 @@ TEST(DungeonTest, RejectsHarvestAfterResourceIsExhaustedWithoutExtraFoodCost) {
     EXPECT_EQ(player.food(), 4);
     EXPECT_EQ(player.amount(Resources::GOLD), 2);
 
-    auto room = dungeon.getRoom(player, 1);
+    auto room = dungeon.get_room(player, 1);
     ASSERT_TRUE(room.resources.has_value());
     EXPECT_EQ(room.resources->get().at(Resources::GOLD), 0);
 }

@@ -85,7 +85,7 @@ class Dungeon final {
      * @exception std::out_of_range throws if given room is not found
      * @return Room& lvalue reference to the room
      */
-    [[nodiscard]] RoomView getRoom(const Player &player, uint8_t room) const;
+    [[nodiscard]] RoomView get_room(const Player &player, uint8_t room) const;
 
     /**
      * @brief Moves player to another room
