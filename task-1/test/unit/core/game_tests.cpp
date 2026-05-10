@@ -268,5 +268,17 @@ TEST(GameTest, ProvidesCorrectRoomsRangesByKnowledge) {
     }
 }
 
+TEST(GameTest, ProvidesCorrectInfoAboutFreeHarvesting) {
+    auto game = make_game();
+    game.move_player(1);
+    EXPECT_TRUE(game.free_harvest());
+    EXPECT_TRUE(game.free_harvest(2));
+    game.harvest(Resources::GOLD);
+    EXPECT_FALSE(game.free_harvest());
+    game.move_player(2);
+    game.harvest(Resources::EXPERIENCE);
+    EXPECT_FALSE(game.free_harvest(2));
+}
+
 }  // namespace
 }  // namespace tvb::core
