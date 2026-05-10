@@ -1,0 +1,152 @@
+---
+name: CI
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-18
+
+      - name: Check formatting
+        run: |
+          find apps include src tests \
+            -type f \( \
+              -name '*.c' -o \
+              -name '*.cc' -o \
+              -name '*.cpp' -o \
+              -name '*.cxx' -o \
+              -name '*.h' -o \
+              -name '*.hpp' -o \
+              -name '*.hxx' \
+            \) \
+            -print0 | xargs -0 clang-format-18 --dry-run --Werror
+
+  build-test:
+    name: ${{ matrix.compiler }} ${{ matrix.preset }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ clang
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.build_preset }} --parallel
+
+      - name: Test
+        run: ctest --preset ${{ matrix.test_preset }}
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: l2-sim-${{ matrix.compiler }}-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/apps/l2-sim
+          if-no-files-found: error
+
+  static-analysis:
+    name: clang-tidy
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install analysis tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang clang-tidy
+
+      - name: Configure
+        run: cmake --preset ci-clang-tidy
+
+      - name: Analyze
+        run: cmake --build --preset build-ci-clang-tidy --parallel
+
+  sanitizers:
+    name: ASan/UBSan
+    runs-on: ubuntu-24.04
+
+    env:
+      ASAN_OPTIONS: >-
+        detect_leaks=0:strict_string_checks=1:check_initialization_order=1
+      UBSAN_OPTIONS: print_stacktrace=1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++
+
+      - name: Configure
+        run: cmake --preset ci-sanitizers
+
+      - name: Build
+        run: cmake --build --preset build-ci-sanitizers --parallel
+
+      - name: Test
+        run: ctest --preset test-ci-sanitizers
