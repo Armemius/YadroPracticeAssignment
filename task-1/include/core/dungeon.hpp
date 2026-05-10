@@ -115,6 +115,14 @@ class Dungeon final {
     explicit Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {}
 
    private:
+    /**
+     * @brief Updates player knowledge depending on the room
+     * 
+     * @param player Player to update knowledge
+     * @param room Room the player is currently in
+     */
+    void update_knowledge(Player &player, uint8_t room) const;
+
     std::unordered_map<uint8_t, Room> rooms_;  ///< Map of rooms in the current dungeon, maps rooms to their indices
 };
 

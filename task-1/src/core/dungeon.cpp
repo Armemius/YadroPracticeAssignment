@@ -37,15 +37,19 @@ const std::unordered_map<Resource, uint8_t> &Dungeon::Room::resources() const no
 Dungeon::RoomView Dungeon::getRoom(const Player &player, uint8_t room) const {
     const Room &room_info = rooms_.at(room);
     auto level = static_cast<std::underlying_type_t<RoomKnowledge>>(player.knowledge_.access(room));
-    constexpr auto UNKNOWN_LEVEL = static_cast<std::underlying_type_t<RoomKnowledge>>(RoomKnowledge::UNKNOWN);
+    constexpr auto KNOWN_LEVEL = static_cast<std::underlying_type_t<RoomKnowledge>>(RoomKnowledge::KNOWN);
     constexpr auto VISIBLE_LEVEL = static_cast<std::underlying_type_t<RoomKnowledge>>(RoomKnowledge::VISIBLE);
     constexpr auto VISITED_LEVEL = static_cast<std::underlying_type_t<RoomKnowledge>>(RoomKnowledge::VISITED);
+
+    if (room == player.room()) {
+        level = std::max(level, VISITED_LEVEL);
+    }
 
     decltype(RoomView::idx) index = std::nullopt;
     decltype(RoomView::adjacent_rooms) adjacent_rooms = std::nullopt;
     decltype(RoomView::resources) resources = std::nullopt;
 
-    if (level > UNKNOWN_LEVEL) {
+    if (level >= KNOWN_LEVEL) {
         index = room_info.idx();
     }
 
@@ -70,16 +74,20 @@ void Dungeon::move(Player &player, uint8_t target_room) {
     if (!rooms_.contains(player.room())) [[unlikely]] {
         throw std::logic_error("Player's room is non-existent");
     }
+    if (!rooms_.contains(target_room)) [[unlikely]] {
+        throw std::logic_error("Target room is non-existent");
+    }
 
     const auto &adjacent_rooms = rooms_.at(player.room()).adjacent_rooms();
-    bool move_possible = std::ranges::binary_search(adjacent_rooms, target_room);
+    bool move_possible = std::ranges::find(adjacent_rooms, target_room) != adjacent_rooms.end();
     if (!move_possible) [[unlikely]] {
         throw std::logic_error("Impossible move");
     }
+    update_knowledge(player, player.room());
+
     --player.food_left_;
     player.current_room_idx_ = target_room;
-
-    // TODO: armemius - implement room knowledge update
+    update_knowledge(player, target_room);
 }
 
 void Dungeon::harvest(Player &player, const Resource &resource) {
@@ -92,17 +100,44 @@ void Dungeon::harvest(Player &player, const Resource &resource) {
     if (!rooms_.contains(player.room())) [[unlikely]] {
         throw std::logic_error("Player's room is non-existent");
     }
+    update_knowledge(player, player.room());
+    if (player.knowledge_.access(player.room()) != RoomKnowledge::VISITED) [[unlikely]] {
+        throw std::logic_error("Player cannot harvest resources in a non-visited room");
+    }
+
     auto &room = rooms_.at(player.room());
     if (!room.has(resource)) {
         throw std::logic_error("No available resources");
     }
-    if (player.knowledge_.harvested_rooms_.contains(player.room())) [[likely]] {
+    auto [_, first_harvest] = player.knowledge_.harvested_rooms_.insert(player.room());
+    if (!first_harvest) {
         --player.food_left_;
-    } else [[unlikely]] {
-        player.knowledge_.harvested_rooms_.insert(player.room());
     }
+
     --room.resources_.at(resource);
     ++player.harvested_resources_[resource];
+}
+
+void Dungeon::update_knowledge(Player &player, uint8_t room) const {
+    const auto room_iter = rooms_.find(room);
+    if (room_iter == rooms_.end()) [[unlikely]] {
+        throw std::logic_error("Room is non-existent");
+    }
+
+    player.knowledge_.promote(room, RoomKnowledge::VISITED);
+
+    for (uint8_t visible_room : room_iter->second.adjacent_rooms()) {
+        player.knowledge_.promote(visible_room, RoomKnowledge::VISIBLE);
+
+        const auto visible_room_iter = rooms_.find(visible_room);
+        if (visible_room_iter == rooms_.end()) {
+            continue;
+        }
+
+        for (uint8_t known_room : visible_room_iter->second.adjacent_rooms()) {
+            player.knowledge_.promote(known_room, RoomKnowledge::KNOWN);
+        }
+    }
 }
 
 }  // namespace tvb::core
