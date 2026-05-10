@@ -7,4 +7,10 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# TODO
+include(GoogleTest)
+
+add_executable(core_tests unit/core/player_tests.cpp)
+target_link_libraries(core_tests PRIVATE core GTest::gtest_main)
+target_compile_features(core_tests PRIVATE cxx_std_20)
+
+gtest_discover_tests(core_tests)
