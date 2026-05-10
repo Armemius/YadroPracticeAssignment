@@ -21,9 +21,9 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    std::ofstream out{"results.txt"};
+    std::ofstream out{"result.txt"};
     if (!out) {
-        std::cerr << "Unable to open output file: results.txt\n";
+        std::cerr << "Unable to open output file: result.txt\n";
         return EXIT_FAILURE;
     }
 
