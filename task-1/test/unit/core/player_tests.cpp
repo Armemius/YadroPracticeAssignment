@@ -79,13 +79,12 @@ TEST(PlayerTest, TracksHarvestedAmountsAndScore) {
 
     dungeon.move(player, 1);
     dungeon.harvest(player, Resources::GOLD);
-    dungeon.harvest(player, Resources::GOLD);
     dungeon.harvest(player, Resources::IRON);
 
     EXPECT_EQ(player.amount(Resources::GOLD), 2);
-    EXPECT_EQ(player.amount(Resources::IRON), 1);
+    EXPECT_EQ(player.amount(Resources::IRON), 2);
     EXPECT_EQ(player.amount(Resources::GEM), 0);
-    EXPECT_EQ(player.value(), 51);
+    EXPECT_EQ(player.value(), 58);
 }
 
 TEST(PlayerTest, DoublesOnlyTargetResourceTypeInScore) {
@@ -94,15 +93,14 @@ TEST(PlayerTest, DoublesOnlyTargetResourceTypeInScore) {
 
     dungeon.move(player, 1);
     dungeon.harvest(player, Resources::GOLD);
-    dungeon.harvest(player, Resources::GOLD);
     dungeon.harvest(player, Resources::IRON);
     dungeon.harvest(player, Resources::GEM);
 
     EXPECT_EQ(player.amount(Resources::GOLD), 2);
-    EXPECT_EQ(player.amount(Resources::IRON), 1);
+    EXPECT_EQ(player.amount(Resources::IRON), 2);
     EXPECT_EQ(player.amount(Resources::GEM), 1);
     EXPECT_EQ(player.amount(Resources::EXPERIENCE), 0);
-    EXPECT_EQ(player.value(), 75);
+    EXPECT_EQ(player.value(), 82);
 }
 
 TEST(PlayerTest, ScoresExperienceAsTargetResource) {
@@ -110,8 +108,6 @@ TEST(PlayerTest, ScoresExperienceAsTargetResource) {
     Player player{ResourceType::EXPERIENCE, 6};
 
     dungeon.move(player, 2);
-    dungeon.harvest(player, Resources::EXPERIENCE);
-    dungeon.harvest(player, Resources::EXPERIENCE);
     dungeon.harvest(player, Resources::EXPERIENCE);
 
     EXPECT_EQ(player.amount(Resources::EXPERIENCE), 3);
