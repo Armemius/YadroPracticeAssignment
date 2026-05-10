@@ -36,3 +36,23 @@ source_group(
     PREFIX "Parser Source Files"
     FILES ${PARSER_SOURCES_LIST}
 )
+
+# Bot library
+
+file(GLOB BOT_SOURCES_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/bot/*.cpp")
+file(GLOB BOT_HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/bot/*.hpp")
+add_library(bot ${BOT_SOURCES_LIST} ${BOT_HEADER_LIST})
+target_link_libraries(bot PRIVATE core)
+target_include_directories(bot PUBLIC "${PROJECT_SOURCE_DIR}/include")
+target_compile_features(bot PUBLIC cxx_std_20)
+
+source_group(
+    TREE "${PROJECT_SOURCE_DIR}/include"
+    PREFIX "Bot Header Files"
+    FILES ${BOT_HEADER_LIST}
+)
+source_group(
+    TREE "${PROJECT_SOURCE_DIR}/src"
+    PREFIX "Bot Source Files"
+    FILES ${BOT_SOURCES_LIST}
+)
