@@ -124,11 +124,25 @@ jobs:
 
       - name: Configure
         working-directory: task-1
-        run: cmake --preset ci-clang-tidy
+        run: cmake --preset ci-debug
 
       - name: Analyze
         working-directory: task-1
-        run: cmake --build --preset build-ci-clang-tidy --parallel
+        run: |
+          mapfile -d '' sources < <(
+            find app src test \
+              -type f \( \
+                -name '*.cc' -o \
+                -name '*.cpp' -o \
+                -name '*.cxx' \
+              \) \
+              -print0
+          )
+
+          clang-tidy \
+            -p .build/ci-debug \
+            --header-filter='^'"$PWD"'/(app|include|src|test)/' \
+            "${sources[@]}"
 
   sanitizers:
     name: ASan/UBSan
