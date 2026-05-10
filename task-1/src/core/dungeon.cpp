@@ -160,6 +160,22 @@ void Dungeon::init_player(Player &player) {
     update_knowledge(player, 0);
 }
 
+std::pair<RoomIndexIterator, RoomIndexIterator> Dungeon::known_rooms(const Player &player) {
+    return player.knowledge_.known_rooms();
+}
+
+std::pair<RoomIndexIterator, RoomIndexIterator> Dungeon::visible_rooms(const Player &player) {
+    return player.knowledge_.visible_rooms();
+}
+
+std::pair<RoomIndexIterator, RoomIndexIterator> Dungeon::visited_rooms(const Player &player) {
+    return player.knowledge_.visited_rooms();
+}
+
+std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> Dungeon::nonvisited_rooms(const Player &player) {
+    return player.knowledge_.nonvisited_rooms();
+}
+
 void Dungeon::update_knowledge(Player &player, uint8_t room) const {
     const auto room_iter = rooms_.find(room);
     if (room_iter == rooms_.end()) [[unlikely]] {

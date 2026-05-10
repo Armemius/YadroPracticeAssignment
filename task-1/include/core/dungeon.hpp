@@ -139,6 +139,35 @@ class Dungeon final {
     void init_player(Player &player);
 
     /**
+    * @brief Returns range of known rooms for the player
+    *
+    * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+    */
+    [[nodiscard]] static std::pair<RoomIndexIterator, RoomIndexIterator> known_rooms(const Player &player);
+
+    /**
+    * @brief Returns range of visible rooms for the player
+    *
+    * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+    */
+    [[nodiscard]] static std::pair<RoomIndexIterator, RoomIndexIterator> visible_rooms(const Player &player);
+
+    /**
+    * @brief Returns range of visited rooms for the player
+    *
+    * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+    */
+    [[nodiscard]] static std::pair<RoomIndexIterator, RoomIndexIterator> visited_rooms(const Player &player);
+
+    /**
+    * @brief Returns range of nonvisited rooms for the player
+    *
+    * @return std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> Begin and end iterators for the range
+    */
+    [[nodiscard]] static std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> nonvisited_rooms(
+        const Player &player);
+
+    /**
      * @brief Construct a new Dungeon object
      * 
      * @param rooms map of the rooms in the dungeon
