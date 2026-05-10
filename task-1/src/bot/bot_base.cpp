@@ -74,7 +74,6 @@ void BotBase::log_harvest_action(core::ResourceType type) {
     }
 }
 
-
 const core::Game &BotBase::game() const {
     return *game_;
 }
