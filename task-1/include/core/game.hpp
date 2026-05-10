@@ -135,6 +135,34 @@ class Game {
      * @exception std::logic_error throw if action is not permitted
      */
     void harvest(const Resource &resource);
+
+    /**
+     * @brief Returns range of known rooms for the player
+     *
+     * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> known_rooms() const;
+
+    /**
+     * @brief Returns range of visible rooms for the player
+     *
+     * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> visible_rooms() const;
+
+    /**
+     * @brief Returns range of visited rooms for the player
+     *
+     * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> visited_rooms() const;
+
+    /**
+     * @brief Returns range of nonvisited rooms for the player
+     *
+     * @return std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> Begin and end iterators for the range
+     */
+    [[nodiscard]] std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> nonvisited_rooms() const;
 };
 
 }  // namespace tvb::core

@@ -1,5 +1,5 @@
 #include "core/game.hpp"
-#include <optional>
+
 #include <stdexcept>
 #include "core/dungeon.hpp"
 #include "core/player.hpp"
@@ -72,6 +72,22 @@ const Dungeon::Room &Game::get_current_room() const {
 
 RoomKnowledge Game::get_room_knowledge(uint8_t room) const {
     return tvb::core::Dungeon::get_room_knowledge(*player_, room);
+}
+
+std::pair<RoomIndexIterator, RoomIndexIterator> Game::known_rooms() const {
+    return tvb::core::Dungeon::known_rooms(*player_);
+}
+
+std::pair<RoomIndexIterator, RoomIndexIterator> Game::visible_rooms() const {
+    return tvb::core::Dungeon::visible_rooms(*player_);
+}
+
+std::pair<RoomIndexIterator, RoomIndexIterator> Game::visited_rooms() const {
+    return tvb::core::Dungeon::visited_rooms(*player_);
+}
+
+std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> Game::nonvisited_rooms() const {
+    return tvb::core::Dungeon::nonvisited_rooms(*player_);
 }
 
 }  // namespace tvb::core
