@@ -81,6 +81,14 @@ class Game {
     [[nodiscard]] uint16_t player_amount(const Resource &resource) const;
 
     /**
+     * @brief Returns current value of the resource for the player
+     *
+     * @param resource resource to check
+     * @return uint16_t current value of the resource
+     */
+    [[nodiscard]] uint16_t resource_value(const Resource &resource) const noexcept;
+
+    /**
      * @brief Returns state of the room player currently in
      * 
      * @exception std::out_of_range throws if given room is not found

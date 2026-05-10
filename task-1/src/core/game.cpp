@@ -37,6 +37,10 @@ uint16_t Game::player_amount(const Resource &resource) const {
     return player_->amount(resource);
 }
 
+uint16_t Game::resource_value(const Resource &resource) const noexcept {
+    return player_->resource_value(resource);
+}
+
 Game::RoomState Game::player_room_state() const {
     const auto &room = dungeon_->get_curent_room_info(*player_);
     return RoomState{.room_idx = room.idx(),
