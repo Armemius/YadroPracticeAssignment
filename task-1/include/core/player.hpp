@@ -201,6 +201,14 @@ class Player final {
      */
     [[nodiscard]] uint16_t amount(const Resource &resource) const;
 
+    /**
+     * @brief Returns current value of the resource for this player
+     *
+     * @param resource resource to check
+     * @return uint16_t current value of the resource
+     */
+    [[nodiscard]] uint16_t resource_value(const Resource &resource) const noexcept;
+
    private:
     PlayerKnowledge knowledge_;                                   ///< State of the player's knowledge of the dungeon
     std::unordered_map<Resource, uint16_t> harvested_resources_;  ///< Resources harvested during current session

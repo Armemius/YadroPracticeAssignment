@@ -172,14 +172,9 @@ uint8_t Player::room() const noexcept {
 }
 
 uint32_t Player::value() const noexcept {
-    // Recheck info about value calculation and adjust if needed
     return std::accumulate(
-        harvested_resources_.cbegin(), harvested_resources_.cend(), 0U, [&](auto acc, const auto &current) {
-            if (current.first.type() == target_resource_) {
-                return acc + (current.second * current.first.value());
-            }
-            return acc + (current.second * ((current.first.value() / 2) + (current.first.value() % 2)));
-        });
+        harvested_resources_.cbegin(), harvested_resources_.cend(), 0U,
+        [&](auto acc, const auto &current) { return acc + (current.second * resource_value(current.first)); });
 }
 
 uint16_t Player::amount(const Resource &resource) const {
@@ -187,6 +182,13 @@ uint16_t Player::amount(const Resource &resource) const {
         return 0;
     }
     return harvested_resources_.at(resource);
+}
+
+uint16_t Player::resource_value(const Resource &resource) const noexcept {
+    if (resource.type() == target_resource_) {
+        return resource.value();
+    }
+    return (resource.value() / 2) + (resource.value() % 2);
 }
 
 }  // namespace tvb::core
