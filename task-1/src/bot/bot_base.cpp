@@ -16,11 +16,17 @@ void BotBase::run() {
 void BotBase::move(uint8_t room) {
     game_->move_player(room);
     log_move_action(room);
+    if (room != 0) {
+        log_room_state();
+    } else {
+        log_results();
+    }
 }
 
 void BotBase::harvest(const core::Resource &resource) {
     game_->harvest(resource);
     log_harvest_action(resource.type());
+    log_room_state();
 }
 
 void BotBase::log_room_state() {
@@ -66,6 +72,11 @@ void BotBase::log_harvest_action(core::ResourceType type) {
             out_ << "collect exp\n";
             break;
     }
+}
+
+
+const core::Game &BotBase::game() const {
+    return *game_;
 }
 
 }  // namespace tvb::bot

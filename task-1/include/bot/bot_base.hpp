@@ -82,6 +82,13 @@ class BotBase {
      */
     void log_harvest_action(core::ResourceType type);
 
+    /**
+     * @brief Returns current game state
+     * 
+     * @return const core::Game& current game state
+     */
+    const core::Game &game() const;
+
    private:
     std::ostream &out_;                 ///< Logs output stream
     std::shared_ptr<core::Game> game_;  ///< Game state
