@@ -55,6 +55,7 @@ TEST(DungeonTest, RoomReportsResourcePresenceCountsAndTopology) {
     EXPECT_EQ(room.count(Resources::GEM), 0);
     EXPECT_EQ(room.adjacent_rooms(), (std::vector<uint8_t>{1, 3, 9}));
     EXPECT_EQ(room.resources().at(Resources::IRON), 2);
+    EXPECT_TRUE(room.harvested_resources().empty());
 }
 
 TEST(DungeonTest, ExposesOnlyInformationAllowedByPlayerKnowledge) {
@@ -186,7 +187,7 @@ TEST(DungeonTest, RejectsMoveForDeadPlayerOutsideEntrance) {
     EXPECT_EQ(player.food(), 0);
 }
 
-TEST(DungeonTest, HarvestDecrementsResourcesAndChargesOnlyRepeatedRoomHarvests) {
+TEST(DungeonTest, HarvestCollectsAllResourcesAndChargesOnlyRepeatedRoomHarvests) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
@@ -195,15 +196,17 @@ TEST(DungeonTest, HarvestDecrementsResourcesAndChargesOnlyRepeatedRoomHarvests) 
 
     auto first_harvest_view = dungeon.get_available_room_info(player, 1);
     ASSERT_TRUE(first_harvest_view.resources.has_value());
-    EXPECT_EQ(first_harvest_view.resources->get().at(Resources::GOLD), 1);
+    EXPECT_EQ(first_harvest_view.resources->get().at(Resources::GOLD), 0);
     EXPECT_EQ(player.food(), 5);
+    EXPECT_EQ(player.amount(Resources::GOLD), 2);
 
-    dungeon.harvest(player, Resources::GOLD);
+    dungeon.harvest(player, Resources::IRON);
 
     auto second_harvest_view = dungeon.get_available_room_info(player, 1);
     ASSERT_TRUE(second_harvest_view.resources.has_value());
-    EXPECT_EQ(second_harvest_view.resources->get().at(Resources::GOLD), 0);
+    EXPECT_EQ(second_harvest_view.resources->get().at(Resources::IRON), 0);
     EXPECT_EQ(player.food(), 4);
+    EXPECT_EQ(player.amount(Resources::IRON), 2);
 }
 
 TEST(DungeonTest, FirstHarvestIsFreeInEachDifferentRoom) {
@@ -217,6 +220,7 @@ TEST(DungeonTest, FirstHarvestIsFreeInEachDifferentRoom) {
     dungeon.move(player, 2);
     dungeon.harvest(player, Resources::EXPERIENCE);
     EXPECT_EQ(player.food(), 4);
+    EXPECT_EQ(player.amount(Resources::EXPERIENCE), 3);
 }
 
 TEST(DungeonTest, RepeatedHarvestInSameRoomCostsFoodEvenForDifferentResource) {
@@ -228,22 +232,23 @@ TEST(DungeonTest, RepeatedHarvestInSameRoomCostsFoodEvenForDifferentResource) {
     dungeon.harvest(player, Resources::IRON);
 
     EXPECT_EQ(player.food(), 4);
-    EXPECT_EQ(player.amount(Resources::GOLD), 1);
-    EXPECT_EQ(player.amount(Resources::IRON), 1);
+    EXPECT_EQ(player.amount(Resources::GOLD), 2);
+    EXPECT_EQ(player.amount(Resources::IRON), 2);
 }
 
-TEST(DungeonTest, RepeatedHarvestCanSpendLastFoodAndLeavePlayerDeadOutsideEntrance) {
+TEST(DungeonTest, RepeatedRoomHarvestCanSpendLastFoodAndLeavePlayerDeadOutsideEntrance) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 2};
 
     dungeon.move(player, 1);
     dungeon.harvest(player, Resources::GOLD);
-    dungeon.harvest(player, Resources::GOLD);
+    dungeon.harvest(player, Resources::IRON);
 
     EXPECT_EQ(player.room(), 1);
     EXPECT_EQ(player.food(), 0);
     EXPECT_FALSE(player.alive());
     EXPECT_EQ(player.amount(Resources::GOLD), 2);
+    EXPECT_EQ(player.amount(Resources::IRON), 2);
 }
 
 TEST(DungeonTest, RejectsHarvestForDeadPlayerOutsideEntranceWithoutChangingResources) {
@@ -317,11 +322,10 @@ TEST(DungeonTest, RejectsHarvestAfterResourceIsExhaustedWithoutExtraFoodCost) {
 
     dungeon.move(player, 1);
     dungeon.harvest(player, Resources::GOLD);
-    dungeon.harvest(player, Resources::GOLD);
-    ASSERT_EQ(player.food(), 4);
+    ASSERT_EQ(player.food(), 5);
 
     EXPECT_THROW(dungeon.harvest(player, Resources::GOLD), std::logic_error);
-    EXPECT_EQ(player.food(), 4);
+    EXPECT_EQ(player.food(), 5);
     EXPECT_EQ(player.amount(Resources::GOLD), 2);
 
     auto room = dungeon.get_available_room_info(player, 1);
