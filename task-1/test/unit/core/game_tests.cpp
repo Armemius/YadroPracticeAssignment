@@ -24,8 +24,23 @@ Dungeon make_test_dungeon() {
     return Dungeon{std::move(rooms)};
 }
 
+Dungeon make_big_test_dungeon() {
+    std::unordered_map<uint8_t, Room> rooms;
+    rooms.emplace(0, Room{0, {}, {1, 2, 3}});
+    rooms.emplace(1, Room{1, {}, {0, 4, 2}});
+    rooms.emplace(2, Room{2, {}, {0, 1}});
+    rooms.emplace(3, Room{3, {}, {0, 4}});
+    rooms.emplace(4, Room{4, {}, {1, 3, 5}});
+    rooms.emplace(5, Room{5, {}, {4}});
+    return Dungeon{std::move(rooms)};
+}
+
 std::unique_ptr<Dungeon> make_test_dungeon_ptr() {
     return std::make_unique<Dungeon>(make_test_dungeon());
+}
+
+std::unique_ptr<Dungeon> make_big_test_dungeon_ptr() {
+    return std::make_unique<Dungeon>(make_big_test_dungeon());
 }
 
 std::unique_ptr<Player> make_player_ptr(ResourceType target_resource = ResourceType::GOLD, uint8_t food = 6) {
@@ -34,6 +49,10 @@ std::unique_ptr<Player> make_player_ptr(ResourceType target_resource = ResourceT
 
 Game make_game(ResourceType target_resource = ResourceType::GOLD, uint8_t food = 6) {
     return Game{make_player_ptr(target_resource, food), make_test_dungeon_ptr()};
+}
+
+Game make_big_game(ResourceType target_resource = ResourceType::GOLD, uint8_t food = 6) {
+    return Game{make_player_ptr(target_resource, food), make_big_test_dungeon_ptr()};
 }
 
 TEST(GameTest, RejectsNullPlayerOrDungeon) {
@@ -184,6 +203,23 @@ TEST(GameTest, PropagatesCurrentRoomLookupErrors) {
     auto game = Game{make_player_ptr(), std::make_unique<Dungeon>(std::move(rooms))};
 
     EXPECT_THROW((void)game.player_room_state(), std::logic_error);
+}
+
+TEST(GameTest, ProvidesCorrectPlayerKnowledgeLevel) {
+    auto game = make_big_game();
+    EXPECT_EQ(game.get_room_knowledge(0), RoomKnowledge::VISITED);
+    EXPECT_EQ(game.get_room_knowledge(1), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.get_room_knowledge(2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.get_room_knowledge(3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.get_room_knowledge(4), RoomKnowledge::KNOWN);
+    EXPECT_EQ(game.get_room_knowledge(5), RoomKnowledge::UNKNOWN);
+    game.move_player(1);
+    EXPECT_EQ(game.get_room_knowledge(0), RoomKnowledge::VISITED);
+    EXPECT_EQ(game.get_room_knowledge(1), RoomKnowledge::VISITED);
+    EXPECT_EQ(game.get_room_knowledge(2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.get_room_knowledge(3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.get_room_knowledge(4), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.get_room_knowledge(5), RoomKnowledge::KNOWN);
 }
 
 }  // namespace
