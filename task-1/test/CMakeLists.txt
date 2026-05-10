@@ -9,9 +9,9 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-file(GLOB CORE_TESTS_SOURCES_LIST CONFIGURE_DEPENDS "unit/core/*.cpp")
+file(GLOB CORE_TESTS_SOURCES_LIST CONFIGURE_DEPENDS "unit/core/*.cpp" "unit/parser/*.cpp")
 add_executable(core_tests ${CORE_TESTS_SOURCES_LIST})
-target_link_libraries(core_tests PRIVATE core GTest::gtest_main)
+target_link_libraries(core_tests PRIVATE core parser GTest::gtest_main)
 target_compile_features(core_tests PRIVATE cxx_std_20)
 
 gtest_discover_tests(core_tests)
