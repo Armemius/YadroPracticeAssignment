@@ -452,5 +452,19 @@ TEST(DungeonTest, ProvidesCorrectRoomsRangesByKnowledge) {
     }
 }
 
+TEST(DungeonTest, ProvidesCorrectInfoAboutFreeHarvesting) {
+    auto dungeon = make_test_dungeon();
+    Player player{ResourceType::GOLD, 6};
+    dungeon.init_player(player);
+    dungeon.move(player, 1);
+    EXPECT_TRUE(dungeon.free_harvest(player));
+    EXPECT_TRUE(dungeon.free_harvest(player, 2));
+    dungeon.harvest(player, Resources::GOLD);
+    EXPECT_FALSE(dungeon.free_harvest(player));
+    dungeon.move(player, 2);
+    dungeon.harvest(player, Resources::EXPERIENCE);
+    EXPECT_FALSE(dungeon.free_harvest(player, 2));
+}
+
 }  // namespace
 }  // namespace tvb::core
