@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
-#include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
@@ -84,10 +83,9 @@ const Dungeon::Room &Dungeon::get_curent_room_info(const Player &player) const {
 Dungeon::Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {
     // Connect adjacent rooms
     auto insert_room_if_not_present = [](std::vector<uint8_t> &rooms, uint8_t idx) {
-        if (!std::ranges::binary_search(rooms, idx)) {
-            rooms.push_back(idx);
-            std::ranges::sort(rooms);
-            // TODO: armemius - rewrite this hideous thing
+        auto pos = std::ranges::lower_bound(rooms, idx);
+        if (pos == rooms.end() || *pos != idx) {
+            rooms.insert(pos, idx);
         }
     };
 
