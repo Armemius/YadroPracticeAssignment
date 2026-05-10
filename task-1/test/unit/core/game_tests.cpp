@@ -63,24 +63,27 @@ TEST(GameTest, ExposesInitialPlayerAndRoomState) {
     EXPECT_EQ(room_state.resources.gold_amount, 0);
     EXPECT_EQ(room_state.resources.gems_amount, 0);
     EXPECT_EQ(room_state.resources.experience_amount, 0);
-    EXPECT_FALSE(room_state.last_harvested_resource.has_value());
+    EXPECT_TRUE(room_state.harvested_resources.empty());
 }
 
-TEST(GameTest, MovesPlayerAndClearsLastHarvestedResource) {
+TEST(GameTest, UsedResourcesAreStoredPerRoom) {
     auto game = make_game(ResourceType::GOLD, 6);
 
     game.move_player(1);
     game.harvest(Resources::GOLD);
-    ASSERT_TRUE(game.player_room_state().last_harvested_resource.has_value());
+    ASSERT_TRUE(game.player_room_state().harvested_resources.contains(Resources::GOLD));
 
     game.move_player(2);
 
     EXPECT_EQ(game.player_room(), 2);
     EXPECT_EQ(game.player_food(), 4);
-    EXPECT_FALSE(game.player_room_state().last_harvested_resource.has_value());
+    EXPECT_TRUE(game.player_room_state().harvested_resources.empty());
+
+    game.move_player(1);
+    EXPECT_TRUE(game.player_room_state().harvested_resources.contains(Resources::GOLD));
 }
 
-TEST(GameTest, HarvestUpdatesRoomStatePlayerStateAndLastHarvestedResource) {
+TEST(GameTest, HarvestUpdatesRoomStatePlayerStateAndUsedResources) {
     auto game = make_game(ResourceType::GOLD, 6);
 
     game.move_player(1);
@@ -89,20 +92,20 @@ TEST(GameTest, HarvestUpdatesRoomStatePlayerStateAndLastHarvestedResource) {
     auto room_state = game.player_room_state();
     EXPECT_EQ(room_state.room_idx, 1);
     EXPECT_EQ(room_state.resources.iron_amount, 2);
-    EXPECT_EQ(room_state.resources.gold_amount, 1);
+    EXPECT_EQ(room_state.resources.gold_amount, 0);
     EXPECT_EQ(room_state.resources.gems_amount, 1);
     EXPECT_EQ(room_state.resources.experience_amount, 0);
-    ASSERT_TRUE(room_state.last_harvested_resource.has_value());
-    EXPECT_EQ(*room_state.last_harvested_resource, ResourceType::GOLD);
+    EXPECT_EQ(room_state.harvested_resources.size(), 1);
+    EXPECT_TRUE(room_state.harvested_resources.contains(Resources::GOLD));
 
     auto player_state = game.player_state();
     EXPECT_EQ(player_state.resources.iron_amount, 0);
-    EXPECT_EQ(player_state.resources.gold_amount, 1);
+    EXPECT_EQ(player_state.resources.gold_amount, 2);
     EXPECT_EQ(player_state.resources.gems_amount, 0);
     EXPECT_EQ(player_state.resources.experience_amount, 0);
-    EXPECT_EQ(player_state.total_value, 22);
-    EXPECT_EQ(game.player_amount(Resources::GOLD), 1);
-    EXPECT_EQ(game.player_value(), 22);
+    EXPECT_EQ(player_state.total_value, 44);
+    EXPECT_EQ(game.player_amount(Resources::GOLD), 2);
+    EXPECT_EQ(game.player_value(), 44);
 }
 
 TEST(GameTest, RepeatedHarvestUsesCoreFoodAndScoringRules) {
@@ -116,15 +119,20 @@ TEST(GameTest, RepeatedHarvestUsesCoreFoodAndScoringRules) {
     EXPECT_EQ(game.player_food(), 7);
 
     auto player_state = game.player_state();
-    EXPECT_EQ(player_state.resources.iron_amount, 1);
-    EXPECT_EQ(player_state.resources.gold_amount, 1);
+    EXPECT_EQ(player_state.resources.iron_amount, 2);
+    EXPECT_EQ(player_state.resources.gold_amount, 2);
     EXPECT_EQ(player_state.resources.gems_amount, 1);
     EXPECT_EQ(player_state.resources.experience_amount, 0);
-    EXPECT_EQ(player_state.total_value, 64);
+    EXPECT_EQ(player_state.total_value, 82);
 
     auto room_state = game.player_room_state();
-    ASSERT_TRUE(room_state.last_harvested_resource.has_value());
-    EXPECT_EQ(*room_state.last_harvested_resource, ResourceType::GEM);
+    EXPECT_EQ(room_state.harvested_resources.size(), 3);
+    EXPECT_TRUE(room_state.harvested_resources.contains(Resources::GOLD));
+    EXPECT_TRUE(room_state.harvested_resources.contains(Resources::IRON));
+    EXPECT_TRUE(room_state.harvested_resources.contains(Resources::GEM));
+    EXPECT_EQ(room_state.resources.iron_amount, 0);
+    EXPECT_EQ(room_state.resources.gold_amount, 0);
+    EXPECT_EQ(room_state.resources.gems_amount, 0);
 }
 
 TEST(GameTest, GetRoomInfoUsesPlayerKnowledge) {
@@ -156,17 +164,17 @@ TEST(GameTest, PropagatesMoveAndHarvestErrorsWithoutChangingGameState) {
     EXPECT_THROW(game.move_player(3), std::logic_error);
     EXPECT_EQ(game.player_room(), 0);
     EXPECT_EQ(game.player_food(), 6);
-    EXPECT_FALSE(game.player_room_state().last_harvested_resource.has_value());
+    EXPECT_TRUE(game.player_room_state().harvested_resources.empty());
 
     game.move_player(1);
     game.harvest(Resources::GOLD);
-    ASSERT_TRUE(game.player_room_state().last_harvested_resource.has_value());
+    ASSERT_TRUE(game.player_room_state().harvested_resources.contains(Resources::GOLD));
 
     EXPECT_THROW(game.harvest(Resources::EXPERIENCE), std::logic_error);
     auto room_state = game.player_room_state();
-    ASSERT_TRUE(room_state.last_harvested_resource.has_value());
-    EXPECT_EQ(*room_state.last_harvested_resource, ResourceType::GOLD);
-    EXPECT_EQ(room_state.resources.gold_amount, 1);
+    EXPECT_EQ(room_state.harvested_resources.size(), 1);
+    EXPECT_TRUE(room_state.harvested_resources.contains(Resources::GOLD));
+    EXPECT_EQ(room_state.resources.gold_amount, 0);
     EXPECT_EQ(game.player_amount(Resources::EXPERIENCE), 0);
 }
 
