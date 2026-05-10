@@ -137,6 +137,23 @@ class Game {
     void harvest(const Resource &resource);
 
     /**
+     * @brief Checks if player can harvest resource without consuming food
+     * 
+     * @return true If the harvest can be performed free
+     * @return false If the harvest cannot be performed free
+     */
+    [[nodiscard]] bool free_harvest() const;
+
+    /**
+     * @brief Checks if player can harvest resource without consuming food
+     * 
+     * @param room Room to check
+     * @return true If the harvest can be performed free
+     * @return false If the harvest cannot be performed free
+     */
+    [[nodiscard]] bool free_harvest(uint8_t room) const;
+
+    /**
      * @brief Returns range of known rooms for the player
      *
      * @return std::pair<RoomIndexIterator, RoomIndexIterator> Begin and end iterators for the range

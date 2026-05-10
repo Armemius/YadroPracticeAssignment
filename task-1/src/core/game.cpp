@@ -1,5 +1,6 @@
 #include "core/game.hpp"
 
+#include <cstdint>
 #include <stdexcept>
 #include "core/dungeon.hpp"
 #include "core/player.hpp"
@@ -64,6 +65,14 @@ void Game::move_player(uint8_t room) {
 
 void Game::harvest(const Resource &resource) {
     dungeon_->harvest(*player_, resource);
+}
+
+bool Game::free_harvest() const {
+    return tvb::core::Dungeon::free_harvest(*player_);
+}
+
+bool Game::free_harvest(uint8_t room) const {
+    return tvb::core::Dungeon::free_harvest(*player_, room);
 }
 
 const Dungeon::Room &Game::get_current_room() const {
