@@ -6,7 +6,6 @@
 #include <functional>
 #include <optional>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace tvb::core {
@@ -19,8 +18,7 @@ class Dungeon final {
     /// Struct representing certain room in the dungeon
     class Room final {
        public:
-        Room(uint8_t idx, std::unordered_map<Resource, uint8_t> resources, std::vector<uint8_t> adjacent_rooms)
-            : idx_(idx), resources_(std::move(resources)), adjacent_rooms_(std::move(adjacent_rooms)) {}
+        Room(uint8_t idx, std::unordered_map<Resource, uint8_t> resources, std::vector<uint8_t> adjacent_rooms);
 
         /**
          * @brief Returns index of the room
@@ -112,7 +110,7 @@ class Dungeon final {
      * 
      * @param rooms map of the rooms in the dungeon
      */
-    explicit Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {}
+    explicit Dungeon(std::unordered_map<uint8_t, Room> rooms);
 
    private:
     /**

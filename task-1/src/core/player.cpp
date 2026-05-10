@@ -27,6 +27,8 @@ void PlayerKnowledge::promote(uint8_t room, RoomKnowledge level) {
     }
 }
 
+Player::Player(ResourceType target_resource, uint8_t food) : target_resource_(target_resource), food_left_(food) {}
+
 uint8_t Player::food() const noexcept {
     return food_left_;
 }

@@ -11,6 +11,11 @@
 
 namespace tvb::core {
 
+Dungeon::Room::Room(uint8_t idx, std::unordered_map<Resource, uint8_t> resources, std::vector<uint8_t> adjacent_rooms)
+    : idx_(idx), resources_(std::move(resources)), adjacent_rooms_(std::move(adjacent_rooms)) {
+    std::ranges::sort(adjacent_rooms_);
+}
+
 uint8_t Dungeon::Room::idx() const {
     return idx_;
 }
@@ -63,6 +68,8 @@ Dungeon::RoomView Dungeon::getRoom(const Player &player, uint8_t room) const {
 
     return {.idx = index, .adjacent_rooms = adjacent_rooms, .resources = resources};
 }
+
+Dungeon::Dungeon(std::unordered_map<uint8_t, Room> rooms) : rooms_(std::move(rooms)) {}
 
 void Dungeon::move(Player &player, uint8_t target_room) {
     if (!player.alive()) [[unlikely]] {

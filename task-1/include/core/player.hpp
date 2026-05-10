@@ -45,7 +45,7 @@ class PlayerKnowledge final {
 /// Class representing player
 class Player final {
    public:
-    Player(ResourceType target_resource, uint8_t food) : target_resource_(target_resource), food_left_(food) {}
+    Player(ResourceType target_resource, uint8_t food);
 
     /**
      * @brief Returns amount of food available
