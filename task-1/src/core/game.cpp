@@ -1,6 +1,7 @@
 #include "core/game.hpp"
 #include <optional>
 #include <stdexcept>
+#include "core/dungeon.hpp"
 #include "core/player.hpp"
 #include "core/resources.hpp"
 
@@ -12,6 +13,7 @@ Game::Game(std::unique_ptr<Player> player, std::unique_ptr<Dungeon> dungeon) {
     }
     player_ = std::move(player);
     dungeon_ = std::move(dungeon);
+    dungeon_->init_player(*player_);
 }
 
 uint16_t Game::player_food() const noexcept {
@@ -62,6 +64,14 @@ void Game::move_player(uint8_t room) {
 
 void Game::harvest(const Resource &resource) {
     dungeon_->harvest(*player_, resource);
+}
+
+const Dungeon::Room &Game::get_current_room() const {
+    return dungeon_->get_curent_room_info(*player_);
+}
+
+RoomKnowledge Game::get_room_knowledge(uint8_t room) const {
+    return tvb::core::Dungeon::get_room_knowledge(*player_, room);
 }
 
 }  // namespace tvb::core

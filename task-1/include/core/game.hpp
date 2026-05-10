@@ -105,6 +105,20 @@ class Game {
     [[nodiscard]] Dungeon::RoomView get_room_info(uint8_t room) const;
 
     /**
+     * @brief Get the current room object
+     * 
+     * @return const Dungeon::Room& current room object
+     */
+    [[nodiscard]] const Dungeon::Room &get_current_room() const;
+
+    /**
+     * @brief Get the room knowledge object
+     * 
+     * @return RoomKnowledge Player's knowledge about certain room
+     */
+    [[nodiscard]] RoomKnowledge get_room_knowledge(uint8_t room) const;
+
+    /**
      * @brief Moves player to another room
      * 
      * @param player player to move
