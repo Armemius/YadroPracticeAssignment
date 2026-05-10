@@ -133,6 +133,25 @@ class Dungeon final {
     void harvest(Player &player, const Resource &resource);
 
     /**
+     * @brief Checks if player can harvest resource without consuming food
+     * 
+     * @param player Player to check ability to
+     * @return true If the harvest can be performed free
+     * @return false If the harvest cannot be performed free
+     */
+    [[nodiscard]] static bool free_harvest(const Player &player);
+
+    /**
+     * @brief Checks if player can harvest resource without consuming food
+     * 
+     * @param player Player to check ability to
+     * @param room Room to check
+     * @return true If the harvest can be performed free
+     * @return false If the harvest cannot be performed free
+     */
+    [[nodiscard]] static bool free_harvest(const Player &player, uint8_t room);
+
+    /**
      * @brief Places player into the dungeon
      * 
      */

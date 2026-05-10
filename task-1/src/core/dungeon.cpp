@@ -155,6 +155,14 @@ void Dungeon::harvest(Player &player, const Resource &resource) {
     room.harvested_resources_.insert(resource);
 }
 
+bool Dungeon::free_harvest(const Player &player) {
+    return !player.knowledge_.harvested(player.room());
+}
+
+bool Dungeon::free_harvest(const Player &player, uint8_t room) {
+    return !player.knowledge_.harvested(room);
+}
+
 void Dungeon::init_player(Player &player) {
     player.current_room_idx_ = 0;
     update_knowledge(player, 0);
