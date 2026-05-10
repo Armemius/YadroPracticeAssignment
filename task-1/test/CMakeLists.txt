@@ -9,7 +9,8 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-add_executable(core_tests unit/core/player_tests.cpp)
+file(GLOB CORE_TESTS_SOURCES_LIST CONFIGURE_DEPENDS "unit/core/*.cpp")
+add_executable(core_tests ${CORE_TESTS_SOURCES_LIST})
 target_link_libraries(core_tests PRIVATE core GTest::gtest_main)
 target_compile_features(core_tests PRIVATE cxx_std_20)
 
