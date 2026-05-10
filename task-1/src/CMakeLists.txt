@@ -16,3 +16,23 @@ source_group(
     PREFIX "Core Source Files"
     FILES ${GAME_CORE_SOURCES_LIST}
 )
+
+# Parser library
+
+file(GLOB PARSER_SOURCES_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/parser/*.cpp")
+file(GLOB PARSER_HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/parser/*.hpp")
+add_library(parser ${PARSER_SOURCES_LIST} ${PARSER_HEADER_LIST})
+target_link_libraries(parser PRIVATE core)
+target_include_directories(parser PUBLIC "${PROJECT_SOURCE_DIR}/include")
+target_compile_features(parser PUBLIC cxx_std_20)
+
+source_group(
+    TREE "${PROJECT_SOURCE_DIR}/include"
+    PREFIX "Parser Header Files"
+    FILES ${PARSER_HEADER_LIST}
+)
+source_group(
+    TREE "${PROJECT_SOURCE_DIR}/src"
+    PREFIX "Parser Source Files"
+    FILES ${PARSER_SOURCES_LIST}
+)
