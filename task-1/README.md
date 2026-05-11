@@ -1,6 +1,6 @@
 # Yadro practice assignment: Task 1
 
-Description: [markdown](./TASK.md) / [pdf](./task.pdf)
+Description: [markdown](./assets/TASK.md) / [pdf](./assets/task.pdf)
 
 This folder provides my solution for the first task of YADRO practice
 assignment. Description of the task can be found in `TASK.md` file (english)
