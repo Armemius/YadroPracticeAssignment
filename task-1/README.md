@@ -1,5 +1,9 @@
 # Yadro practice assignment: Task 1
 
+<div style="width: 100%; display: flex; justify-content: center; align-items: center;">
+  <img src="./assets/demo.gif" alt="demo" height="320"/>
+</div>
+
 Description: [markdown](./assets/TASK.md) / [pdf](./assets/task.pdf)
 
 This folder provides my solution for the first task of YADRO practice
