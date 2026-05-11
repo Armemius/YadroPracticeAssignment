@@ -16,10 +16,10 @@ void BotBase::run() {
 void BotBase::move(uint8_t room) {
     game_->move_player(room);
     log_move_action(room);
-    if (room != 0) {
-        log_room_state();
-    } else {
+    if (finished()) {
         log_results();
+    } else {
+        log_room_state();
     }
 }
 
