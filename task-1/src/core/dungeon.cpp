@@ -43,7 +43,7 @@ const std::unordered_set<Resource> &Dungeon::Room::harvested_resources() const n
     return harvested_resources_;
 }
 
-Dungeon::RoomView Dungeon::get_available_room_info(const Player &player, uint8_t room) const {
+Dungeon::RoomView Dungeon::available_room_info(const Player &player, uint8_t room) const {
     const Room &room_info = rooms_.at(room);
     auto level = static_cast<std::underlying_type_t<RoomKnowledge>>(player.knowledge_.access(room));
     constexpr auto KNOWN_LEVEL = static_cast<std::underlying_type_t<RoomKnowledge>>(RoomKnowledge::KNOWN);
@@ -73,14 +73,14 @@ Dungeon::RoomView Dungeon::get_available_room_info(const Player &player, uint8_t
     return {.idx = index, .adjacent_rooms = adjacent_rooms, .resources = resources};
 }
 
-const Dungeon::Room &Dungeon::get_current_room_info(const Player &player) const {
+const Dungeon::Room &Dungeon::current_room_info(const Player &player) const {
     if (!rooms_.contains(player.room())) [[unlikely]] {
         throw std::logic_error("Player's room is non-existent");
     }
     return rooms_.at(player.room());
 }
 
-RoomKnowledge Dungeon::get_room_knowledge(const Player &player, uint8_t room) {
+RoomKnowledge Dungeon::room_knowledge(const Player &player, uint8_t room) {
     return player.knowledge_.access(room);
 }
 

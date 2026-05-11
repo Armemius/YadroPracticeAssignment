@@ -155,13 +155,13 @@ std::vector<uint8_t> OriginalBot::shortest_path(uint8_t target_room, bool target
         const uint8_t current_room = rooms.front();
         rooms.pop();
 
-        auto room_info = game().get_room_info(current_room);
+        auto room_info = game().room_info(current_room);
         if (!room_info.adjacent_rooms.has_value()) {
             continue;
         }
 
         for (uint8_t adjacent_room : room_info.adjacent_rooms->get()) {
-            const auto knowledge = game().get_room_knowledge(adjacent_room);
+            const auto knowledge = game().room_knowledge(adjacent_room);
             if (adjacent_room == target_room) {
                 if (target_may_be_unvisited || knowledge == core::RoomKnowledge::VISITED) {
                     previous_room.emplace(adjacent_room, current_room);

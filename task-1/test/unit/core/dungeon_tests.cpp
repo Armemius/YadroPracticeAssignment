@@ -82,7 +82,7 @@ TEST(DungeonTest, ExposesOnlyInformationAllowedByPlayerKnowledge) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    auto entrance = dungeon.get_available_room_info(player, 0);
+    auto entrance = dungeon.available_room_info(player, 0);
     ASSERT_TRUE(entrance.idx.has_value());
     EXPECT_EQ(*entrance.idx, 0);
     EXPECT_TRUE(entrance.adjacent_rooms.has_value());
@@ -90,17 +90,17 @@ TEST(DungeonTest, ExposesOnlyInformationAllowedByPlayerKnowledge) {
 
     dungeon.move(player, 1);
 
-    auto visited = dungeon.get_available_room_info(player, 1);
+    auto visited = dungeon.available_room_info(player, 1);
     ASSERT_TRUE(visited.idx.has_value());
     EXPECT_TRUE(visited.adjacent_rooms.has_value());
     EXPECT_TRUE(visited.resources.has_value());
 
-    auto visible = dungeon.get_available_room_info(player, 2);
+    auto visible = dungeon.available_room_info(player, 2);
     ASSERT_TRUE(visible.idx.has_value());
     EXPECT_TRUE(visible.adjacent_rooms.has_value());
     EXPECT_FALSE(visible.resources.has_value());
 
-    auto known = dungeon.get_available_room_info(player, 3);
+    auto known = dungeon.available_room_info(player, 3);
     ASSERT_TRUE(known.idx.has_value());
     EXPECT_FALSE(known.adjacent_rooms.has_value());
     EXPECT_FALSE(known.resources.has_value());
@@ -110,7 +110,7 @@ TEST(DungeonTest, UnknownExistingRoomHidesAllInformation) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    auto hidden = dungeon.get_available_room_info(player, 3);
+    auto hidden = dungeon.available_room_info(player, 3);
 
     EXPECT_FALSE(hidden.idx.has_value());
     EXPECT_FALSE(hidden.adjacent_rooms.has_value());
@@ -121,7 +121,7 @@ TEST(DungeonTest, CurrentRoomIsFullyVisibleEvenBeforeKnowledgeWasUpdated) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    auto current = dungeon.get_available_room_info(player, player.room());
+    auto current = dungeon.available_room_info(player, player.room());
 
     ASSERT_TRUE(current.idx.has_value());
     EXPECT_EQ(*current.idx, 0);
@@ -129,11 +129,11 @@ TEST(DungeonTest, CurrentRoomIsFullyVisibleEvenBeforeKnowledgeWasUpdated) {
     EXPECT_TRUE(current.resources.has_value());
 }
 
-TEST(DungeonTest, GetRoomThrowsForNonexistentRoom) {
+TEST(DungeonTest, RoomInfoThrowsForNonexistentRoom) {
     auto dungeon = make_test_dungeon();
     Player player{ResourceType::GOLD, 6};
 
-    EXPECT_THROW((void)dungeon.get_available_room_info(player, 99), std::out_of_range);
+    EXPECT_THROW((void)dungeon.available_room_info(player, 99), std::out_of_range);
 }
 
 TEST(DungeonTest, MovesAcrossUnsortedAdjacentRoomsAndConsumesFood) {
@@ -209,7 +209,7 @@ TEST(DungeonTest, HarvestCollectsAllResourcesAndChargesOnlyRepeatedRoomHarvests)
     dungeon.move(player, 1);
     dungeon.harvest(player, Resources::GOLD);
 
-    auto first_harvest_view = dungeon.get_available_room_info(player, 1);
+    auto first_harvest_view = dungeon.available_room_info(player, 1);
     ASSERT_TRUE(first_harvest_view.resources.has_value());
     EXPECT_EQ(first_harvest_view.resources->get().at(Resources::GOLD), 0);
     EXPECT_EQ(player.food(), 5);
@@ -217,7 +217,7 @@ TEST(DungeonTest, HarvestCollectsAllResourcesAndChargesOnlyRepeatedRoomHarvests)
 
     dungeon.harvest(player, Resources::IRON);
 
-    auto second_harvest_view = dungeon.get_available_room_info(player, 1);
+    auto second_harvest_view = dungeon.available_room_info(player, 1);
     ASSERT_TRUE(second_harvest_view.resources.has_value());
     EXPECT_EQ(second_harvest_view.resources->get().at(Resources::IRON), 0);
     EXPECT_EQ(player.food(), 4);
@@ -276,7 +276,7 @@ TEST(DungeonTest, RejectsHarvestForDeadPlayerOutsideEntranceWithoutChangingResou
     EXPECT_THROW(dungeon.harvest(player, Resources::GOLD), std::logic_error);
     EXPECT_EQ(player.amount(Resources::GOLD), 0);
 
-    auto room = dungeon.get_available_room_info(player, 1);
+    auto room = dungeon.available_room_info(player, 1);
     ASSERT_TRUE(room.resources.has_value());
     EXPECT_EQ(room.resources->get().at(Resources::GOLD), 2);
 }
@@ -291,7 +291,7 @@ TEST(DungeonTest, RejectsHarvestAtEntranceWithNoFoodWithoutChangingResources) {
     EXPECT_THROW(dungeon.harvest(player, Resources::GOLD), std::logic_error);
     EXPECT_EQ(player.amount(Resources::GOLD), 0);
 
-    auto entrance = dungeon.get_available_room_info(player, 0);
+    auto entrance = dungeon.available_room_info(player, 0);
     ASSERT_TRUE(entrance.resources.has_value());
     EXPECT_EQ(entrance.resources->get().at(Resources::GOLD), 1);
 }
@@ -326,7 +326,7 @@ TEST(DungeonTest, RejectsHarvestOfZeroQuantityResourceWithoutConsumingFood) {
     EXPECT_EQ(player.food(), 5);
     EXPECT_EQ(player.amount(Resources::GOLD), 0);
 
-    auto room = dungeon.get_available_room_info(player, 1);
+    auto room = dungeon.available_room_info(player, 1);
     ASSERT_TRUE(room.resources.has_value());
     EXPECT_EQ(room.resources->get().at(Resources::GOLD), 0);
 }
@@ -343,7 +343,7 @@ TEST(DungeonTest, RejectsHarvestAfterResourceIsExhaustedWithoutExtraFoodCost) {
     EXPECT_EQ(player.food(), 5);
     EXPECT_EQ(player.amount(Resources::GOLD), 2);
 
-    auto room = dungeon.get_available_room_info(player, 1);
+    auto room = dungeon.available_room_info(player, 1);
     ASSERT_TRUE(room.resources.has_value());
     EXPECT_EQ(room.resources->get().at(Resources::GOLD), 0);
 }
@@ -353,7 +353,7 @@ TEST(DungeonTest, ProvidesFullInfoAboutExistentCurrentRoom) {
     Player player{ResourceType::GOLD, 6};
 
     dungeon.move(player, 1);
-    const auto &room = dungeon.get_current_room_info(player);
+    const auto &room = dungeon.current_room_info(player);
     EXPECT_EQ(room.idx(), 1);
     EXPECT_EQ(room.count(Resources::GOLD), 2);
     EXPECT_FALSE(room.has(Resources::EXPERIENCE));
@@ -363,7 +363,7 @@ TEST(DungeonTest, ThrowsOnNonexistentCurrentRoom) {
     auto dungeon = make_dungeon_without_entrance();
     Player player{ResourceType::GOLD, 6};
 
-    EXPECT_THROW((void)dungeon.get_current_room_info(player), std::logic_error);
+    EXPECT_THROW((void)dungeon.current_room_info(player), std::logic_error);
 }
 
 TEST(DungeonTest, AdjacentRoomsInfoIsConsistentBetweenRooms) {
@@ -371,14 +371,14 @@ TEST(DungeonTest, AdjacentRoomsInfoIsConsistentBetweenRooms) {
     Player player{ResourceType::GOLD, 6};
 
     {
-        const auto &entrance_room = dungeon.get_current_room_info(player);
+        const auto &entrance_room = dungeon.current_room_info(player);
         EXPECT_EQ(entrance_room.adjacent_rooms(), (std::vector<uint8_t>{1, 2, 3}));
     }
 
     dungeon.move(player, 2);
 
     {
-        const auto &entrance_room = dungeon.get_current_room_info(player);
+        const auto &entrance_room = dungeon.current_room_info(player);
         EXPECT_EQ(entrance_room.adjacent_rooms(), (std::vector<uint8_t>{0, 3}));
     }
 }
@@ -387,19 +387,19 @@ TEST(DungeonTest, ProvidesCorrectPlayerKnowledgeLevel) {
     auto dungeon = make_big_test_dungeon();
     Player player{ResourceType::GOLD, 6};
     dungeon.init_player(player);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 0), RoomKnowledge::VISITED);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 1), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 2), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 3), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 4), RoomKnowledge::KNOWN);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 5), RoomKnowledge::UNKNOWN);
+    EXPECT_EQ(dungeon.room_knowledge(player, 0), RoomKnowledge::VISITED);
+    EXPECT_EQ(dungeon.room_knowledge(player, 1), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.room_knowledge(player, 2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.room_knowledge(player, 3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.room_knowledge(player, 4), RoomKnowledge::KNOWN);
+    EXPECT_EQ(dungeon.room_knowledge(player, 5), RoomKnowledge::UNKNOWN);
     dungeon.move(player, 1);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 0), RoomKnowledge::VISITED);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 1), RoomKnowledge::VISITED);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 2), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 3), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 4), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(dungeon.get_room_knowledge(player, 5), RoomKnowledge::KNOWN);
+    EXPECT_EQ(dungeon.room_knowledge(player, 0), RoomKnowledge::VISITED);
+    EXPECT_EQ(dungeon.room_knowledge(player, 1), RoomKnowledge::VISITED);
+    EXPECT_EQ(dungeon.room_knowledge(player, 2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.room_knowledge(player, 3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.room_knowledge(player, 4), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(dungeon.room_knowledge(player, 5), RoomKnowledge::KNOWN);
 }
 
 TEST(DungeonTest, ProvidesCorrectRoomsRangesByKnowledge) {

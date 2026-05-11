@@ -154,23 +154,23 @@ TEST(GameTest, RepeatedHarvestUsesCoreFoodAndScoringRules) {
     EXPECT_EQ(room_state.resources.gems_amount, 0);
 }
 
-TEST(GameTest, GetRoomInfoUsesPlayerKnowledge) {
+TEST(GameTest, RoomInfoUsesPlayerKnowledge) {
     auto game = make_game(ResourceType::GOLD, 6);
 
-    auto hidden = game.get_room_info(3);
+    auto hidden = game.room_info(3);
     EXPECT_TRUE(hidden.idx.has_value());
     EXPECT_FALSE(hidden.adjacent_rooms.has_value());
     EXPECT_FALSE(hidden.resources.has_value());
 
     game.move_player(1);
 
-    auto visible = game.get_room_info(2);
+    auto visible = game.room_info(2);
     ASSERT_TRUE(visible.idx.has_value());
     EXPECT_EQ(*visible.idx, 2);
     EXPECT_TRUE(visible.adjacent_rooms.has_value());
     EXPECT_FALSE(visible.resources.has_value());
 
-    auto known = game.get_room_info(3);
+    auto known = game.room_info(3);
     ASSERT_TRUE(known.idx.has_value());
     EXPECT_EQ(*known.idx, 3);
     EXPECT_FALSE(known.adjacent_rooms.has_value());
@@ -200,24 +200,24 @@ TEST(GameTest, PropagatesMoveAndHarvestErrorsWithoutChangingGameState) {
 TEST(GameTest, PropagatesCurrentRoomLookupErrors) {
     std::unordered_map<uint8_t, Room> rooms;
     auto game = make_game();
-    EXPECT_THROW((void)game.get_room_info(42), std::logic_error);
+    EXPECT_THROW((void)game.room_info(42), std::logic_error);
 }
 
 TEST(GameTest, ProvidesCorrectPlayerKnowledgeLevel) {
     auto game = make_big_game();
-    EXPECT_EQ(game.get_room_knowledge(0), RoomKnowledge::VISITED);
-    EXPECT_EQ(game.get_room_knowledge(1), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(game.get_room_knowledge(2), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(game.get_room_knowledge(3), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(game.get_room_knowledge(4), RoomKnowledge::KNOWN);
-    EXPECT_EQ(game.get_room_knowledge(5), RoomKnowledge::UNKNOWN);
+    EXPECT_EQ(game.room_knowledge(0), RoomKnowledge::VISITED);
+    EXPECT_EQ(game.room_knowledge(1), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.room_knowledge(2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.room_knowledge(3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.room_knowledge(4), RoomKnowledge::KNOWN);
+    EXPECT_EQ(game.room_knowledge(5), RoomKnowledge::UNKNOWN);
     game.move_player(1);
-    EXPECT_EQ(game.get_room_knowledge(0), RoomKnowledge::VISITED);
-    EXPECT_EQ(game.get_room_knowledge(1), RoomKnowledge::VISITED);
-    EXPECT_EQ(game.get_room_knowledge(2), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(game.get_room_knowledge(3), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(game.get_room_knowledge(4), RoomKnowledge::VISIBLE);
-    EXPECT_EQ(game.get_room_knowledge(5), RoomKnowledge::KNOWN);
+    EXPECT_EQ(game.room_knowledge(0), RoomKnowledge::VISITED);
+    EXPECT_EQ(game.room_knowledge(1), RoomKnowledge::VISITED);
+    EXPECT_EQ(game.room_knowledge(2), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.room_knowledge(3), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.room_knowledge(4), RoomKnowledge::VISIBLE);
+    EXPECT_EQ(game.room_knowledge(5), RoomKnowledge::KNOWN);
 }
 
 TEST(GameTest, ProvidesCorrectRoomsRangesByKnowledge) {

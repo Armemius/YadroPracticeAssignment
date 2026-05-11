@@ -43,7 +43,7 @@ uint16_t Game::resource_value(const Resource &resource) const noexcept {
 }
 
 Game::RoomState Game::player_room_state() const {
-    const auto &room = dungeon_->get_current_room_info(*player_);
+    const auto &room = dungeon_->current_room_info(*player_);
     return RoomState{.room_idx = room.idx(),
                      .resources = {.iron_amount = room.count(Resources::IRON),
                                    .gold_amount = room.count(Resources::GOLD),
@@ -60,8 +60,8 @@ Game::PlayerState Game::player_state() const noexcept {
                        .total_value = player_->value()};
 }
 
-Dungeon::RoomView Game::get_room_info(uint8_t room) const {
-    return dungeon_->get_available_room_info(*player_, room);
+Dungeon::RoomView Game::room_info(uint8_t room) const {
+    return dungeon_->available_room_info(*player_, room);
 }
 
 void Game::move_player(uint8_t room) {
@@ -80,12 +80,12 @@ bool Game::free_harvest(uint8_t room) const {
     return tvb::core::Dungeon::free_harvest(*player_, room);
 }
 
-const Dungeon::Room &Game::get_current_room() const {
-    return dungeon_->get_current_room_info(*player_);
+const Dungeon::Room &Game::current_room() const {
+    return dungeon_->current_room_info(*player_);
 }
 
-RoomKnowledge Game::get_room_knowledge(uint8_t room) const {
-    return tvb::core::Dungeon::get_room_knowledge(*player_, room);
+RoomKnowledge Game::room_knowledge(uint8_t room) const {
+    return tvb::core::Dungeon::room_knowledge(*player_, room);
 }
 
 std::pair<RoomIndexIterator, RoomIndexIterator> Game::known_rooms() const {

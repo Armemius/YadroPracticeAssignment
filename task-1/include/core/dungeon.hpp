@@ -94,7 +94,7 @@ class Dungeon final {
      * @exception std::out_of_range throws if given room is not found
      * @return Dungeon::RoomView available information for the room
      */
-    [[nodiscard]] RoomView get_available_room_info(const Player &player, uint8_t room) const;
+    [[nodiscard]] RoomView available_room_info(const Player &player, uint8_t room) const;
 
     /**
      * @brief Returns room the player is currently in
@@ -103,7 +103,7 @@ class Dungeon final {
      * @exception std::logic_error throws if given room is not found
      * @return const Dungeon::Room& information about the room
      */
-    [[nodiscard]] const Room &get_current_room_info(const Player &player) const;
+    [[nodiscard]] const Room &current_room_info(const Player &player) const;
 
     /**
      * @brief Returns player knowledge about a room
@@ -112,7 +112,7 @@ class Dungeon final {
      * @param room room to provide info about
      * @return RoomKnowledge player's knowledge about the room
      */
-    [[nodiscard]] static RoomKnowledge get_room_knowledge(const Player &player, uint8_t room);
+    [[nodiscard]] static RoomKnowledge room_knowledge(const Player &player, uint8_t room);
 
     /**
      * @brief Moves player to another room

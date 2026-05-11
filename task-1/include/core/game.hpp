@@ -110,21 +110,21 @@ class Game {
      * @exception std::out_of_range throws if given room is not found
      * @return Dungeon::RoomView available information for the room
      */
-    [[nodiscard]] Dungeon::RoomView get_room_info(uint8_t room) const;
+    [[nodiscard]] Dungeon::RoomView room_info(uint8_t room) const;
 
     /**
      * @brief Returns the current room object
      *
      * @return const Dungeon::Room& current room object
      */
-    [[nodiscard]] const Dungeon::Room &get_current_room() const;
+    [[nodiscard]] const Dungeon::Room &current_room() const;
 
     /**
      * @brief Returns player knowledge about a room
      *
      * @return RoomKnowledge player's knowledge about the room
      */
-    [[nodiscard]] RoomKnowledge get_room_knowledge(uint8_t room) const;
+    [[nodiscard]] RoomKnowledge room_knowledge(uint8_t room) const;
 
     /**
      * @brief Moves player to another room
