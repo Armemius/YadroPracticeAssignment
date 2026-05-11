@@ -1,10 +1,11 @@
 #include "core/game.hpp"
 
-#include <cstdint>
-#include <stdexcept>
 #include "core/dungeon.hpp"
 #include "core/player.hpp"
 #include "core/resources.hpp"
+
+#include <cstdint>
+#include <stdexcept>
 
 namespace tvb::core {
 

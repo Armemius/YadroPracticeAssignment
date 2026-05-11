@@ -1,7 +1,7 @@
+#include <gtest/gtest.h>
+
 #include "core/game.hpp"
 #include "core/resources.hpp"
-
-#include <gtest/gtest.h>
 
 #include <cstdint>
 #include <memory>

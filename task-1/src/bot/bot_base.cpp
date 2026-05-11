@@ -1,7 +1,9 @@
 #include "bot/bot_base.hpp"
+
+#include "core/resources.hpp"
+
 #include <cstdint>
 #include <utility>
-#include "core/resources.hpp"
 
 namespace tvb::bot {
 

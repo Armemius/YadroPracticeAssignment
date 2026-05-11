@@ -1,7 +1,7 @@
+#include <gtest/gtest.h>
+
 #include "bot/original_bot.hpp"
 #include "parser/parser.hpp"
-
-#include <gtest/gtest.h>
 
 #include <memory>
 #include <sstream>
