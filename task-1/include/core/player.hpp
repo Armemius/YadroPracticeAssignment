@@ -97,14 +97,14 @@ class PlayerKnowledge final {
     /**
      * @brief Check player's access to specified room
      *
-     * @param room index of the roomx
+     * @param room index of the room
      * @return RoomKnowledge player's available knowledge about the room
      */
     [[nodiscard]] RoomKnowledge access(uint8_t room) const;
 
     /**
-     * @brief Checks if player had already harvested certain room
-     * 
+     * @brief Checks if the player has already harvested in a room
+     *
      * @param room Room to check
      * @return true If the room was already harvested
      * @return false If the room was not harvested yet
@@ -133,7 +133,7 @@ class PlayerKnowledge final {
     [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> visited_rooms() const;
 
     /**
-     * @brief Returns range of nonvisited rooms for the player
+     * @brief Returns range of non-visited rooms for the player
      *
      * @return std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> Begin and end iterators for the range
      */
@@ -142,13 +142,13 @@ class PlayerKnowledge final {
    private:
     /**
      * @brief Promotes knowledge of the room to specified level
-     * 
+     *
      * @param room index of the room
      * @param level level of knowledge
      */
     void promote(uint8_t room, RoomKnowledge level);
 
-    /// Indicies for faster checks for specific rooms
+    /// Indices for faster checks for specific rooms
     std::unordered_map<uint8_t, std::set<std::pair<RoomKnowledge, uint8_t>>::iterator> knowledge_indices_;
 
     /// Ordered storage for room knowledge
@@ -166,14 +166,14 @@ class Player final {
 
     /**
      * @brief Returns amount of food available
-     * 
+     *
      * @return uint8_t food left
      */
     [[nodiscard]] uint8_t food() const noexcept;
 
     /**
      * @brief Checks if player is alive
-     * 
+     *
      * @return true player is alive
      * @return false player is dead
      */
@@ -181,21 +181,21 @@ class Player final {
 
     /**
      * @brief Returns index of the room player currently in
-     * 
+     *
      * @return uint8_t index of the room
      */
     [[nodiscard]] uint8_t room() const noexcept;
 
     /**
      * @brief Returns total value of resources harvested
-     * 
+     *
      * @return uint32_t
      */
     [[nodiscard]] uint32_t value() const noexcept;
 
     /**
      * @brief Returns amount of resource that player owns
-     * 
+     *
      * @param resource resource to check
      * @return uint16_t amount of resource
      */
@@ -212,7 +212,7 @@ class Player final {
    private:
     PlayerKnowledge knowledge_;                                   ///< State of the player's knowledge of the dungeon
     std::unordered_map<Resource, uint16_t> harvested_resources_;  ///< Resources harvested during current session
-    ResourceType target_resource_{};                              ///< Resource that have value bonus
+    ResourceType target_resource_{};                              ///< Resource that has value bonus
     uint8_t current_room_idx_{};                                  ///< Current player position represented by room index
     uint8_t food_left_{};                                         ///< Amount of the food left
 

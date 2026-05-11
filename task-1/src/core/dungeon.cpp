@@ -73,7 +73,7 @@ Dungeon::RoomView Dungeon::get_available_room_info(const Player &player, uint8_t
     return {.idx = index, .adjacent_rooms = adjacent_rooms, .resources = resources};
 }
 
-const Dungeon::Room &Dungeon::get_curent_room_info(const Player &player) const {
+const Dungeon::Room &Dungeon::get_current_room_info(const Player &player) const {
     if (!rooms_.contains(player.room())) [[unlikely]] {
         throw std::logic_error("Player's room is non-existent");
     }

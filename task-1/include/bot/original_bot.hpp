@@ -14,7 +14,7 @@ class OriginalBot final : public BotBase {
 
    protected:
     /**
-     * @brief Process next step for the original bot algo
+     * @brief Process next step for the original bot algorithm
      *
      */
     void next() override;
@@ -29,14 +29,14 @@ class OriginalBot final : public BotBase {
     void next_explore();
 
     /**
-     * @brief Process next step for backtracking
+     * @brief Process next step for returning
      *
      */
     void next_backtrack();
 
     /**
      * @brief Try to harvest best free resource if possible
-     * 
+     *
      * @return true Resource was harvested
      * @return false Cannot harvest resource
      */
@@ -44,36 +44,36 @@ class OriginalBot final : public BotBase {
 
     /**
      * @brief Try to harvest best extra resource
-     * 
+     *
      * @return true Resource was harvested
      * @return false Cannot harvest resource
      */
     [[nodiscard]] bool try_harvest_best_extra_resource();
 
     /**
-     * @brief Get best available resource at current room
-     * 
+     * @brief Returns best available resource at current room
+     *
      * @return const core::Resource* best resource to harvest or nullptr if none
      */
     [[nodiscard]] const core::Resource *best_available_resource() const;
 
     /**
      * @brief Calculates shortest path to the next unvisited room
-     * 
+     *
      * @return std::vector<uint8_t> Path to the room
      */
     [[nodiscard]] std::vector<uint8_t> path_to_next_unvisited() const;
 
     /**
      * @brief Calculates shortest path to the entrance room
-     * 
+     *
      * @return std::vector<uint8_t> Path to the entrance
      */
     [[nodiscard]] std::vector<uint8_t> path_to_entrance() const;
 
     /**
      * @brief Calculates shortest path to unvisited room
-     * 
+     *
      * @param target_room Room to find path into
      * @return std::vector<uint8_t> Path to the room
      */
@@ -81,7 +81,7 @@ class OriginalBot final : public BotBase {
 
     /**
      * @brief Calculates shortest path to the room
-     * 
+     *
      * @param target_room Room to find path into
      * @param target_may_be_unvisited Specifies if the target room can be unvisited
      * @return std::vector<uint8_t> Path to the room
@@ -90,7 +90,7 @@ class OriginalBot final : public BotBase {
 
     /**
      * @brief Set the current bot path
-     * 
+     *
      * @param path New bot's path
      */
     void set_current_path(const std::vector<uint8_t> &path);

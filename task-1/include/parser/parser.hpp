@@ -24,7 +24,7 @@ class InvalidInputLine final : public ParserError {
 
 /**
  * @brief Parses input stream to the game object
- * 
+ *
  * @param in input stream to parse
  * @return core::Game Game object if parsing was successful
  * @exception InvalidInputLine throws if input format is invalid

@@ -36,23 +36,23 @@ class Game {
     };
 
     /**
-    * @brief Construct a new Game object
-    * 
-    * @param player Player object
-    * @param dungeon Dungeon object
-    */
+     * @brief Construct a new Game object
+     *
+     * @param player Player object
+     * @param dungeon Dungeon object
+     */
     Game(std::unique_ptr<Player> player, std::unique_ptr<Dungeon> dungeon);
 
     /**
      * @brief Returns amount of food available
-     * 
+     *
      * @return uint16_t food left
      */
     [[nodiscard]] uint16_t player_food() const noexcept;
 
     /**
      * @brief Checks if player is alive
-     * 
+     *
      * @return true player is alive
      * @return false player is dead
      */
@@ -60,21 +60,21 @@ class Game {
 
     /**
      * @brief Returns index of the room player currently in
-     * 
+     *
      * @return uint16_t index of the room
      */
     [[nodiscard]] uint16_t player_room() const noexcept;
 
     /**
      * @brief Returns total value of resources harvested
-     * 
+     *
      * @return uint32_t total value of resources harvested
      */
     [[nodiscard]] uint32_t player_value() const noexcept;
 
     /**
      * @brief Returns amount of resource that player owns
-     * 
+     *
      * @param resource resource to check
      * @return uint16_t amount of resource
      */
@@ -90,7 +90,7 @@ class Game {
 
     /**
      * @brief Returns state of the room player currently in
-     * 
+     *
      * @exception std::out_of_range throws if given room is not found
      * @return RoomState Object representing room state
      */
@@ -98,14 +98,14 @@ class Game {
 
     /**
      * @brief Returns current state of the player
-     * 
+     *
      * @return PlayerState Object representing player state
      */
     [[nodiscard]] PlayerState player_state() const noexcept;
 
     /**
      * @brief Returns room view by given index
-     * 
+     *
      * @param room index of the room
      * @exception std::out_of_range throws if given room is not found
      * @return Dungeon::RoomView available information for the room
@@ -113,40 +113,40 @@ class Game {
     [[nodiscard]] Dungeon::RoomView get_room_info(uint8_t room) const;
 
     /**
-     * @brief Get the current room object
-     * 
+     * @brief Returns the current room object
+     *
      * @return const Dungeon::Room& current room object
      */
     [[nodiscard]] const Dungeon::Room &get_current_room() const;
 
     /**
-     * @brief Get the room knowledge object
-     * 
-     * @return RoomKnowledge Player's knowledge about certain room
+     * @brief Returns player knowledge about a room
+     *
+     * @return RoomKnowledge player's knowledge about the room
      */
     [[nodiscard]] RoomKnowledge get_room_knowledge(uint8_t room) const;
 
     /**
      * @brief Moves player to another room
-     * 
+     *
      * @param player player to move
      * @param room target room
-     * @exception std::logic_error throw if action is not permitted
+     * @exception std::logic_error throws if action is not permitted
      */
     void move_player(uint8_t room);
 
     /**
      * @brief Harvests resources for the player
-     * 
+     *
      * @param player player that should harvest resources
      * @param resource resource to harvest
-     * @exception std::logic_error throw if action is not permitted
+     * @exception std::logic_error throws if action is not permitted
      */
     void harvest(const Resource &resource);
 
     /**
      * @brief Checks if player can harvest resource without consuming food
-     * 
+     *
      * @return true If the harvest can be performed free
      * @return false If the harvest cannot be performed free
      */
@@ -154,7 +154,7 @@ class Game {
 
     /**
      * @brief Checks if player can harvest resource without consuming food
-     * 
+     *
      * @param room Room to check
      * @return true If the harvest can be performed free
      * @return false If the harvest cannot be performed free
@@ -183,7 +183,7 @@ class Game {
     [[nodiscard]] std::pair<RoomIndexIterator, RoomIndexIterator> visited_rooms() const;
 
     /**
-     * @brief Returns range of nonvisited rooms for the player
+     * @brief Returns range of non-visited rooms for the player
      *
      * @return std::pair<MergedRoomIndexIterator, MergedRoomIndexIterator> Begin and end iterators for the range
      */

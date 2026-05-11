@@ -353,7 +353,7 @@ TEST(DungeonTest, ProvidesFullInfoAboutExistentCurrentRoom) {
     Player player{ResourceType::GOLD, 6};
 
     dungeon.move(player, 1);
-    const auto &room = dungeon.get_curent_room_info(player);
+    const auto &room = dungeon.get_current_room_info(player);
     EXPECT_EQ(room.idx(), 1);
     EXPECT_EQ(room.count(Resources::GOLD), 2);
     EXPECT_FALSE(room.has(Resources::EXPERIENCE));
@@ -363,7 +363,7 @@ TEST(DungeonTest, ThrowsOnNonexistentCurrentRoom) {
     auto dungeon = make_dungeon_without_entrance();
     Player player{ResourceType::GOLD, 6};
 
-    EXPECT_THROW((void)dungeon.get_curent_room_info(player), std::logic_error);
+    EXPECT_THROW((void)dungeon.get_current_room_info(player), std::logic_error);
 }
 
 TEST(DungeonTest, AdjacentRoomsInfoIsConsistentBetweenRooms) {
@@ -371,14 +371,14 @@ TEST(DungeonTest, AdjacentRoomsInfoIsConsistentBetweenRooms) {
     Player player{ResourceType::GOLD, 6};
 
     {
-        const auto &entrance_room = dungeon.get_curent_room_info(player);
+        const auto &entrance_room = dungeon.get_current_room_info(player);
         EXPECT_EQ(entrance_room.adjacent_rooms(), (std::vector<uint8_t>{1, 2, 3}));
     }
 
     dungeon.move(player, 2);
 
     {
-        const auto &entrance_room = dungeon.get_curent_room_info(player);
+        const auto &entrance_room = dungeon.get_current_room_info(player);
         EXPECT_EQ(entrance_room.adjacent_rooms(), (std::vector<uint8_t>{0, 3}));
     }
 }

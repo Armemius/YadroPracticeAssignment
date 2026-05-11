@@ -11,7 +11,7 @@ namespace tvb::core {
 
 Game::Game(std::unique_ptr<Player> player, std::unique_ptr<Dungeon> dungeon) {
     if (player == nullptr || dungeon == nullptr) {
-        throw std::invalid_argument("Neither player and dungeon can be null");
+        throw std::invalid_argument("Neither player nor dungeon can be null");
     }
     player_ = std::move(player);
     dungeon_ = std::move(dungeon);
@@ -43,7 +43,7 @@ uint16_t Game::resource_value(const Resource &resource) const noexcept {
 }
 
 Game::RoomState Game::player_room_state() const {
-    const auto &room = dungeon_->get_curent_room_info(*player_);
+    const auto &room = dungeon_->get_current_room_info(*player_);
     return RoomState{.room_idx = room.idx(),
                      .resources = {.iron_amount = room.count(Resources::IRON),
                                    .gold_amount = room.count(Resources::GOLD),
@@ -81,7 +81,7 @@ bool Game::free_harvest(uint8_t room) const {
 }
 
 const Dungeon::Room &Game::get_current_room() const {
-    return dungeon_->get_curent_room_info(*player_);
+    return dungeon_->get_current_room_info(*player_);
 }
 
 RoomKnowledge Game::get_room_knowledge(uint8_t room) const {

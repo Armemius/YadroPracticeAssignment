@@ -16,14 +16,14 @@ class Resource {
 
     /**
      * @brief Returns resource type
-     * 
+     *
      * @return constexpr ResourceType type of the resource
      */
     [[nodiscard]] constexpr ResourceType type() const noexcept { return type_; }
 
     /**
      * @brief Returns resource value
-     * 
+     *
      * @return constexpr uint16_t value of the resource
      */
     [[nodiscard]] constexpr uint16_t value() const noexcept { return value_; }

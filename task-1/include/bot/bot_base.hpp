@@ -13,7 +13,7 @@ class BotBase {
    public:
     /**
      * @brief Construct a new Bot Base object
-     * 
+     *
      * @param game Game for bot to play
      * @param out Logs output stream
      */
@@ -21,28 +21,28 @@ class BotBase {
 
     /**
      * @brief Runs the bot till the end condition
-     * 
+     *
      */
     void run();
 
    protected:
     /**
      * @brief Processes next move for the bot
-     * 
+     *
      */
     virtual void next() = 0;
 
     /**
      * @brief Checks if bot has finished execution
-     * 
+     *
      * @return true Bot is ready
      * @return false Game is still intact
      */
     [[nodiscard]] virtual bool finished() const = 0;
 
     /**
-     * @brief Move to the certain room
-     * 
+     * @brief Move to a room
+     *
      * @throw std::logic_error Impossible move
      * @param room room to move into
      */
@@ -50,7 +50,7 @@ class BotBase {
 
     /**
      * @brief Harvest certain resource
-     * 
+     *
      * @throw std::logic_error Impossible action
      * @param resource resource to harvest
      */
@@ -58,33 +58,33 @@ class BotBase {
 
     /**
      * @brief Prints current room state to the log stream
-     * 
+     *
      */
     void log_room_state();
 
     /**
      * @brief Prints player state
-     * 
+     *
      */
     void log_results();
 
     /**
      * @brief Prints movement action
-     * 
+     *
      * @param room room to move into
      */
     void log_move_action(uint8_t room);
 
     /**
      * @brief Prints collection action
-     * 
+     *
      * @param type Type of resource to harvest
      */
     void log_harvest_action(core::ResourceType type);
 
     /**
      * @brief Returns current game state
-     * 
+     *
      * @return const core::Game& current game state
      */
     const core::Game &game() const;
