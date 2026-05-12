@@ -103,7 +103,7 @@ const core::Resource *OriginalBot::best_available_resource() const {
             return;
         }
 
-        const uint16_t value = game().resource_value(resource);
+        const uint16_t value = game().resource_value(resource) * amount;
         if (best_resource == nullptr || value > best_value) {
             best_resource = &resource;
             best_value = value;
