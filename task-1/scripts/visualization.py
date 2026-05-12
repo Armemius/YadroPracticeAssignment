@@ -23,6 +23,7 @@ class Frame:
     current_room: int = 0
     last_edge: tuple[int, int] | None = None
     visited: set[int] = field(default_factory=lambda: {0})
+    knowledge: dict[int, int] = field(default_factory=dict)
     rooms: dict[int, Room] = field(default_factory=dict)
     log_tail: list[str] = field(default_factory=list)
 
@@ -96,15 +97,36 @@ def apply_collect(resource: str, current_room: int, rooms: dict[int, Room]) -> N
     rooms[current_room].resources[resource] = "_"
 
 
+def promote_knowledge(knowledge: dict[int, int], room: int, level: int) -> None:
+    knowledge[room] = max(knowledge.get(room, 0), level)
+
+
+def update_knowledge(rooms: dict[int, Room], knowledge: dict[int, int], room: int) -> None:
+    promote_knowledge(knowledge, room, 3)
+
+    for visible_room in rooms[room].adjacent:
+        promote_knowledge(knowledge, visible_room, 2)
+
+        visible = rooms.get(visible_room)
+        if visible is None:
+            continue
+
+        for known_room in visible.adjacent:
+            promote_knowledge(knowledge, known_room, 1)
+
+
 def make_frames(rooms: dict[int, Room], output_lines: list[str]) -> list[Frame]:
     current_room = 0
     visited = {0}
+    knowledge: dict[int, int] = {}
+    update_knowledge(rooms, knowledge, current_room)
     log_tail: list[str] = []
     frames = [
         Frame(
             title="Start at room 0",
             current_room=current_room,
             visited=set(visited),
+            knowledge=dict(knowledge),
             rooms=copy_rooms(rooms),
         )
     ]
@@ -119,7 +141,9 @@ def make_frames(rooms: dict[int, Room], output_lines: list[str]) -> list[Frame]:
             source = current_room
             log_tail.append(line)
             log_tail = log_tail[-8:]
+            update_knowledge(rooms, knowledge, source)
             current_room = target
+            update_knowledge(rooms, knowledge, current_room)
             visited.add(target)
             frames.append(
                 Frame(
@@ -127,6 +151,7 @@ def make_frames(rooms: dict[int, Room], output_lines: list[str]) -> list[Frame]:
                     current_room=current_room,
                     last_edge=tuple(sorted((source, target))),  # type: ignore
                     visited=set(visited),
+                    knowledge=dict(knowledge),
                     rooms=copy_rooms(rooms),
                     log_tail=list(log_tail),
                 )
@@ -140,6 +165,7 @@ def make_frames(rooms: dict[int, Room], output_lines: list[str]) -> list[Frame]:
                     title=f"Collect {parts[1]}",
                     current_room=current_room,
                     visited=set(visited),
+                    knowledge=dict(knowledge),
                     rooms=copy_rooms(rooms),
                     log_tail=list(log_tail),
                 )
@@ -200,6 +226,7 @@ def draw_frame(
     graph_axis.axis("off")
 
     node_colors = []
+    node_border_colors = []
     for node in graph.nodes:
         if node == frame.current_room:
             node_colors.append("#f59e0b")
@@ -209,6 +236,14 @@ def draw_frame(
             node_colors.append("#86efac")
         else:
             node_colors.append("#d1d5db")
+
+        knowledge_level = frame.knowledge.get(node, 0)
+        if knowledge_level >= 2:
+            node_border_colors.append("#22c55e")
+        elif knowledge_level == 1:
+            node_border_colors.append("#facc15")
+        else:
+            node_border_colors.append("#111827")
 
     edge_colors = []
     edge_widths = []
@@ -234,7 +269,7 @@ def draw_frame(
         ax=graph_axis,
         node_color=node_colors,
         node_size=style.node_size,
-        edgecolors="#111827",
+        edgecolors=node_border_colors,
         linewidths=style.node_border_width,
     )
     for idx, (x, y) in positions.items():
