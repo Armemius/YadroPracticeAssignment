@@ -9,9 +9,9 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-file(GLOB SIMULATION_TESTS_SOURCES_LIST CONFIGURE_DEPENDS machine_test.cpp simulation_test.cpp)
+file(GLOB SIMULATION_TESTS_SOURCES_LIST CONFIGURE_DEPENDS machine_test.cpp simulation_test.cpp parser_test.cpp)
 add_executable(simulation_test ${SIMULATION_TESTS_SOURCES_LIST})
-target_link_libraries(simulation_test PRIVATE simulation GTest::gtest_main)
+target_link_libraries(simulation_test PRIVATE parser simulation GTest::gtest_main)
 target_compile_features(simulation_test PRIVATE cxx_std_20)
 
 gtest_discover_tests(simulation_test)
