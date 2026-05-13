@@ -70,6 +70,20 @@ bool Machine::start(product_t product) {
     return false;
 }
 
+product_t Machine::current_processing() const {
+    if (idle()) {
+        throw std::out_of_range("No item is processed");
+    }
+    return *current_;
+}
+
+product_t Machine::next_item() const {
+    if (!has_next()) {
+        throw std::out_of_range("No items in the queue");
+    }
+    return queue_.front();
+}
+
 bool Machine::tick(simtime_t now) {
     if (last_tick_ >= now) {
         throw std::logic_error("Machine cannot tick backward in time");

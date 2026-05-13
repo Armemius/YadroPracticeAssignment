@@ -50,6 +50,22 @@ class Machine final {
     bool start(product_t product);
 
     /**
+     * @brief Returns item that is currently processed
+     * 
+     * @exception std::out_of_range No item is currently processed
+     * @return product_t Item that is currently processed
+     */
+    [[nodiscard]] product_t current_processing() const;
+
+    /**
+     * @brief Returns next item to process
+     *
+     * @exception std::out_of_range Queue is empty
+     * @return product_t Item that will be processed next
+     */
+    [[nodiscard]] product_t next_item() const;
+
+    /**
      * @brief Advances time of the machine to certain point and updates state
      * 
      * @exception std::logic_error If tick is less or equal than last tick
