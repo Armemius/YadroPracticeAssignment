@@ -164,7 +164,7 @@ bool Machine::has_next() const noexcept {
 }
 
 bool Machine::can_process() const noexcept {
-    return idle() && has_next();
+    return idle() && has_next() && !ready();
 }
 
 }  // namespace sim
