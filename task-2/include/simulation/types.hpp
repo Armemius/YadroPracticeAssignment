@@ -6,7 +6,7 @@
 namespace sim {
 
 /// Index of the product type
-using product_type_t = uint8_t;
+using product_type_t = uint16_t;
 
 /// Index of the product
 using product_index_t = uint32_t;
@@ -23,10 +23,10 @@ struct Product {
 using product_t = Product;
 
 /// Index of the operation type
-using operation_t = uint8_t;
+using operation_t = uint16_t;
 
 /// Index of the machine
-using machine_t = uint8_t;
+using machine_t = uint16_t;
 
 /// Operation time
 using optime_t = uint16_t;
