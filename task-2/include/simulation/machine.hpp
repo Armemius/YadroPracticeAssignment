@@ -39,9 +39,20 @@ class Machine final {
     bool start();
 
     /**
+     * @brief Starts processing of given item
+     * 
+     * @exception std::logic_error Some item is already is processed
+     * @exception std::logic_error Output slot is full
+     * @exception std::out_of_range Some items is present in the queue
+     * @return true Item was instantly processed
+     * @return false Item processing is in progress
+     */
+    bool start(product_t product);
+
+    /**
      * @brief Advances time of the machine to certain point and updates state
      * 
-     * @exception std::logic_error On impossible action
+     * @exception std::logic_error If tick is less or equal than last tick
      * @param now Current simulation time
      * @return true Resource is ready
      * @return false Resource is not ready or no operations are present
@@ -71,6 +82,22 @@ class Machine final {
      * @return false No current operations
      */
     [[nodiscard]] bool processing() const noexcept;
+
+    /**
+     * @brief Checks if machine has next item to process
+     * 
+     * @return true There is item in queue
+     * @return false Queue is empty
+     */
+    [[nodiscard]] bool has_next() const noexcept;
+
+    /**
+     * @brief Checks if machine can start new processing
+     * 
+     * @return true Machine can start new operation
+     * @return false Machine is busy or no items are present in the queue
+     */
+    [[nodiscard]] bool can_process() const noexcept;
 
     /**
      * @brief Yields ready product
