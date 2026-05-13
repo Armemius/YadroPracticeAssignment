@@ -31,7 +31,14 @@ struct RoutedProduct {
 }  // namespace
 
 Simulation::Simulation(std::vector<Machine> machines, product_type_t product_type_count, std::ostream &log)
-    : machines_(std::move(machines)), product_type_count_(product_type_count), log_(&log) {}
+    : machines_(std::move(machines)),
+      product_type_count_(product_type_count),
+      log_(&log),
+      machine_versions_(machines_.size()) {
+    for (const auto &machine : machines_) {
+        wait_index_.emplace(machine.wait_time(), machine.index());
+    }
+}
 
 void Simulation::run() {
     while (!finished()) {
@@ -41,11 +48,7 @@ void Simulation::run() {
 }
 
 void Simulation::next() {
-    for (auto &machine : machines_) {
-        if (machine.last_tick() < tick_) {
-            machine.tick(tick_);
-        }
-    }
+    tick_finished_machines();
 
     std::vector<ReadyProduct> ready_products;
     do {
@@ -65,32 +68,26 @@ void Simulation::next() {
         }
 
         for (auto &product : routed_products) {
-            product.machine = &*std::ranges::min_element(machines_, [](const Machine &lhs, const Machine &rhs) {
-                return std::pair<simtime_t, machine_t>{lhs.wait_time(), lhs.index()} <
-                       std::pair<simtime_t, machine_t>{rhs.wait_time(), rhs.index()};
-            });
+            product.machine = &select_machine();
         }
 
         for (auto &machine : machines_) {
             if (machine.can_process()) {
-                product_t product = machine.next_item();
-                log_start(tick_, product.index, product.type, machine.index());
-                machine.start();
+                start_from_queue(machine);
             }
         }
 
         for (auto &routed_product : routed_products) {
             Machine &machine = *routed_product.machine;
             if (machine.idle() && !machine.has_next() && !machine.ready()) {
-                log_start(tick_, routed_product.product.index, routed_product.product.type, machine.index());
-                machine.start(routed_product.product);
+                start_direct(machine, routed_product.product);
             } else {
                 wait_events.push_back({.tick = tick_,
                                        .product_index = routed_product.product.index,
                                        .product_type = routed_product.product.type,
                                        .machine_index = machine.index(),
                                        .queue_size = machine.queue_size()});
-                machine.enqueue(routed_product.product);
+                enqueue_to_machine(machine, routed_product.product);
             }
         }
 
@@ -114,7 +111,86 @@ bool Simulation::finished() const {
         machines_, [](const Machine &machine) { return machine.idle() && !machine.has_next() && !machine.ready(); });
 }
 
+void Simulation::refresh_wait_index(machine_t machine_index, simtime_t previous_wait_time) {
+    wait_index_.erase({previous_wait_time, machine_index});
+    wait_index_.emplace(machines_[machine_index].wait_time(), machine_index);
+}
+
+void Simulation::schedule_finish(const Machine &machine) {
+    if (!machine.processing()) {
+        return;
+    }
+    const machine_t machine_index = machine.index();
+    ++machine_versions_[machine_index];
+    finish_events_.push({.tick = machine.current_processing_time(),
+                         .machine_index = machine_index,
+                         .version = machine_versions_[machine_index]});
+}
+
+void Simulation::sync_machine_time(Machine &machine) const {
+    if (machine.last_tick() < tick_) {
+        machine.tick(tick_);
+    }
+}
+
+void Simulation::tick_finished_machines() {
+    while (!finish_events_.empty()) {
+        const FinishEvent event = finish_events_.top();
+        if (event.version != machine_versions_[event.machine_index]) {
+            finish_events_.pop();
+            continue;
+        }
+        if (event.tick != tick_) {
+            break;
+        }
+
+        finish_events_.pop();
+        Machine &machine = machines_[event.machine_index];
+        if (machine.last_tick() < tick_) {
+            machine.tick(tick_);
+        }
+    }
+}
+
+void Simulation::start_from_queue(Machine &machine) {
+    sync_machine_time(machine);
+    product_t product = machine.next_item();
+    const simtime_t previous_wait_time = machine.wait_time();
+    log_start(tick_, product.index, product.type, machine.index());
+    machine.start();
+    refresh_wait_index(machine.index(), previous_wait_time);
+    schedule_finish(machine);
+}
+
+void Simulation::start_direct(Machine &machine, product_t product) {
+    sync_machine_time(machine);
+    log_start(tick_, product.index, product.type, machine.index());
+    machine.start(product);
+    schedule_finish(machine);
+}
+
+void Simulation::enqueue_to_machine(Machine &machine, product_t product) {
+    sync_machine_time(machine);
+    const simtime_t previous_wait_time = machine.wait_time();
+    machine.enqueue(product);
+    refresh_wait_index(machine.index(), previous_wait_time);
+}
+
+Machine &Simulation::select_machine() {
+    return machines_[wait_index_.begin()->second];
+}
+
 void Simulation::advance_to_next_event() {
+    while (!finish_events_.empty()) {
+        const FinishEvent event = finish_events_.top();
+        if (event.version != machine_versions_[event.machine_index]) {
+            finish_events_.pop();
+            continue;
+        }
+        tick_ = event.tick;
+        return;
+    }
+
     simtime_t next_tick = std::numeric_limits<simtime_t>::max();
     for (const auto &machine : machines_) {
         if (machine.processing()) {

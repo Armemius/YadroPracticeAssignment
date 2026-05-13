@@ -1,6 +1,10 @@
 #pragma once
 
+#include <functional>
 #include <ostream>
+#include <queue>
+#include <set>
+#include <utility>
 #include <vector>
 #include "simulation/machine.hpp"
 #include "simulation/types.hpp"
@@ -38,6 +42,74 @@ class Simulation final {
     bool finished() const;
 
    private:
+    struct FinishEvent {
+        simtime_t tick;
+        machine_t machine_index;
+        uint64_t version;
+
+        friend bool operator>(const FinishEvent &lhs, const FinishEvent &rhs) noexcept {
+            return std::pair<simtime_t, machine_t>{lhs.tick, lhs.machine_index} >
+                   std::pair<simtime_t, machine_t>{rhs.tick, rhs.machine_index};
+        }
+    };
+
+    /**
+     * @brief Refreshes machine position in the wait-time index.
+     *
+     * @param machine_index Machine index.
+     * @param previous_wait_time Machine wait time before mutation.
+     */
+    void refresh_wait_index(machine_t machine_index, simtime_t previous_wait_time);
+
+    /**
+     * @brief Registers current machine processing completion in the finish queue.
+     *
+     * @param machine Machine to schedule.
+     */
+    void schedule_finish(const Machine &machine);
+
+    /**
+     * @brief Advances one machine to the current simulation tick if needed.
+     *
+     * @param machine Machine to synchronize.
+     */
+    void sync_machine_time(Machine &machine) const;
+
+    /**
+     * @brief Marks all machines that finish at current tick as ready.
+     */
+    void tick_finished_machines();
+
+    /**
+     * @brief Starts processing from a machine queue and updates indexes.
+     *
+     * @param machine Machine to start.
+     */
+    void start_from_queue(Machine &machine);
+
+    /**
+     * @brief Starts processing of a directly routed product and updates indexes.
+     *
+     * @param machine Machine to start.
+     * @param product Product to process.
+     */
+    void start_direct(Machine &machine, product_t product);
+
+    /**
+     * @brief Queues a routed product and updates indexes.
+     *
+     * @param machine Machine receiving the product.
+     * @param product Product to enqueue.
+     */
+    void enqueue_to_machine(Machine &machine, product_t product);
+
+    /**
+     * @brief Returns machine with minimal queued wait time.
+     *
+     * @return Machine& Selected machine.
+     */
+    Machine &select_machine();
+
     /**
      * @brief Advance current simulation time to the next processing completion
      */
@@ -93,10 +165,13 @@ class Simulation final {
      */
     void log_stop(simtime_t tick) const;
 
-    std::ostream *log_{};                  ///< Log output stream for the simulation
-    simtime_t tick_{};                     ///< Current simulation's tick
-    product_type_t product_type_count_{};  ///< Total number of product types
-    std::vector<Machine> machines_;        ///< Machines for the simulation
+    std::ostream *log_{};                                   ///< Log output stream for the simulation
+    simtime_t tick_{};                                      ///< Current simulation's tick
+    product_type_t product_type_count_{};                   ///< Total number of product types
+    std::vector<Machine> machines_;                         ///< Machines for the simulation
+    std::set<std::pair<simtime_t, machine_t>> wait_index_;  ///< Machines ordered by queued wait time
+    std::priority_queue<FinishEvent, std::vector<FinishEvent>, std::greater<>> finish_events_;  ///< Finish events
+    std::vector<uint64_t> machine_versions_;  ///< Per-machine versions for stale finish events
 };
 
 }  // namespace sim
