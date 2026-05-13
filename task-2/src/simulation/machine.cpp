@@ -15,7 +15,9 @@ Machine::Machine(machine_t index, const std::vector<product_t> &products,
         return;
     }
     for (const auto &it : products) {
-        queue_time_ += optimes_.at(it.type);
+        optime_t operation_time = optimes_.at(it.type);
+        queue_time_ += operation_time;
+        wait_time_ += operation_time;
     }
     queue_ = std::queue(std::deque<product_t>(products.begin(), products.end()));
 }
@@ -37,6 +39,7 @@ bool Machine::start() {
     product_t product = queue_.front();
     queue_.pop();
     optime_t processing_time = optimes_.at(product.type);
+    wait_time_ -= processing_time;
     if (processing_time == 0) {
         upgrade_product(product);
         result_ = std::move(product);
@@ -133,7 +136,9 @@ product_t Machine::yield() {
 }
 
 simtime_t Machine::enqueue(product_t product) {
-    queue_time_ += optimes_.at(product.type);
+    optime_t operation_time = optimes_.at(product.type);
+    queue_time_ += operation_time;
+    wait_time_ += operation_time;
     queue_.push(std::move(product));
     return std::max(queue_time_, last_tick_);
 }
@@ -144,6 +149,10 @@ simtime_t Machine::current_processing_time() const noexcept {
 
 simtime_t Machine::queue_time() const noexcept {
     return std::max(queue_time_, last_tick_);
+}
+
+simtime_t Machine::wait_time() const noexcept {
+    return wait_time_;
 }
 
 size_t Machine::queue_size() const noexcept {

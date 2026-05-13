@@ -153,6 +153,13 @@ class Machine final {
     [[nodiscard]] simtime_t queue_time() const noexcept;
 
     /**
+     * @brief Gets predicted processing time for items currently waiting in the queue
+     *
+     * @return simtime_t Total processing time of queued items
+     */
+    [[nodiscard]] simtime_t wait_time() const noexcept;
+
+    /**
      * @brief Returns total queue size for current machine
      * 
      * @return size_t Amount of items in queue
@@ -163,6 +170,7 @@ class Machine final {
     machine_t index_;                                       ///< Index of the machine
     simtime_t current_processing_till_{};                   ///< Time point till current processing is performed
     simtime_t queue_time_{};                                ///< Time point till machine has processes to perform
+    simtime_t wait_time_{};                                 ///< Total processing time of queued products
     simtime_t last_tick_{};                                 ///< Last tick time
     std::optional<product_t> current_{std::nullopt};        ///< Current product in process
     std::optional<product_t> result_{std::nullopt};         ///< Result of the processing

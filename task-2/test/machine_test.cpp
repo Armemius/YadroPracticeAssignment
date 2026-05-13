@@ -73,6 +73,50 @@ TEST(MachineTests, UpdatesTimeOnEnqueue) {
     EXPECT_EQ(machine.queue_time(), 26);
 }
 
+TEST(MachineTests, ProducesCorrectQueuedWaitTime) {
+    Machine machine = create_machine(42);
+    EXPECT_EQ(machine.wait_time(), 21);
+}
+
+TEST(MachineTests, DecreasesQueuedWaitTimeOnStart) {
+    Machine machine = create_machine(42);
+    EXPECT_FALSE(machine.start());
+    EXPECT_EQ(machine.wait_time(), 16);
+
+    machine.tick(5);
+    (void)machine.yield();
+    EXPECT_FALSE(machine.start());
+    EXPECT_EQ(machine.wait_time(), 9);
+}
+
+TEST(MachineTests, UpdatesQueuedWaitTimeOnEnqueue) {
+    Machine machine = create_machine(42);
+    EXPECT_EQ(machine.wait_time(), 21);
+
+    machine.enqueue({.index = 42, .type = 0});
+    EXPECT_EQ(machine.wait_time(), 26);
+
+    machine.enqueue({.index = 43, .type = 2});
+    EXPECT_EQ(machine.wait_time(), 35);
+}
+
+TEST(MachineTests, DoesNotShiftQueuedWaitTimeWhenIdleTimePasses) {
+    Machine machine = create_machine(42);
+    EXPECT_EQ(machine.wait_time(), 21);
+
+    machine.tick(10);
+    EXPECT_EQ(machine.queue_time(), 31);
+    EXPECT_EQ(machine.wait_time(), 21);
+}
+
+TEST(MachineTests, DoesNotIncludeImmediatelyStartedProductInQueuedWaitTime) {
+    Machine machine = create_empty_machine(42);
+    EXPECT_EQ(machine.wait_time(), 0);
+
+    EXPECT_FALSE(machine.start({.index = 42, .type = 1}));
+    EXPECT_EQ(machine.wait_time(), 0);
+}
+
 TEST(MachineTests, ProvidesCorrectInfoAboutReadyState) {
     Machine machine = create_machine(42);
     machine.start();
