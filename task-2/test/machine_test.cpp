@@ -162,5 +162,15 @@ TEST(MachineTests, RejectYieldWhenNoOutputAvailable) {
     EXPECT_THROW(machine.yield(), std::out_of_range);
 }
 
+TEST(MachineTests, AllowsToProcessItemImmidiately) {
+    Machine machine = create_empty_machine(42);
+    EXPECT_NO_THROW(machine.start({0, 0}));
+}
+
+TEST(MachineTests, RejectsToStartImmediateProcessingWhenQueueIsNotEmpty) {
+    Machine machine = create_machine(42);
+    EXPECT_THROW(machine.start({0, 0}), std::logic_error);
+}
+
 }  // namespace
 }  // namespace sim
