@@ -1,4 +1,4 @@
-# Yadro practice assignment: Task 1
+# Terracraft Valrising bot algo optimization
 
 <div style="width: 100%; display: flex; justify-content: center; align-items: center;">
   <img src="./assets/demo.gif" alt="demo" height="320"/>
