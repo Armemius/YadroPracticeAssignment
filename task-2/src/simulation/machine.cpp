@@ -6,9 +6,9 @@
 
 namespace sim {
 
-Machine::Machine(machine_t index, simtime_t &clock, const std::vector<product_t> &products,
+Machine::Machine(machine_t index, const std::vector<product_t> &products,
                  std::unordered_map<product_type_t, optime_t> optimes)
-    : index_(index), clock_(&clock), optimes_(std::move(optimes)) {
+    : index_(index), optimes_(std::move(optimes)) {
     if (products.empty()) {
         return;
     }
@@ -19,7 +19,7 @@ Machine::Machine(machine_t index, simtime_t &clock, const std::vector<product_t>
     queue_ = std::queue(std::deque<product_t>(products.begin(), products.end()));
 }
 
-bool Machine::start() {
+bool Machine::start(simtime_t now) {
     if (current_.has_value()) {
         throw std::logic_error("Machine is already processing item");
     }
@@ -37,21 +37,21 @@ bool Machine::start() {
         result_ = std::move(product);
         return true;
     }
-    current_processing_till_ = *clock_ + processing_time;
+    current_processing_till_ = now + processing_time;
     current_ = std::move(product);
 
     return false;
 }
 
-bool Machine::tick() {
+bool Machine::tick(simtime_t now) {
     if (!queue_.empty() && !processing()) {
         ++processing_till_;
     }
 
-    processing_till_ = std::max(processing_till_, *clock_);
-    current_processing_till_ = std::max(processing_till_, *clock_);
+    processing_till_ = std::max(processing_till_, now);
+    current_processing_till_ = std::max(processing_till_, now);
 
-    if (processing_till_ <= *clock_) {
+    if (processing_till_ <= now) {
         result_ = std::move(current_);
         current_ = std::nullopt;
     }
