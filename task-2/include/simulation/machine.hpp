@@ -60,6 +60,13 @@ class Machine final {
     bool tick(simtime_t now);
 
     /**
+     * @brief Returns last tick of the machine
+     * 
+     * @return simtime_t Last tick of the machine
+     */
+    [[nodiscard]] simtime_t last_tick() const noexcept;
+
+    /**
      * @brief Checks if item is ready to yield
      * 
      * @return true Item is ready

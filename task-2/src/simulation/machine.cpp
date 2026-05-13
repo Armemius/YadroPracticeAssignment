@@ -93,6 +93,10 @@ bool Machine::tick(simtime_t now) {
     return ready();
 }
 
+simtime_t Machine::last_tick() const noexcept {
+    return last_tick_;
+}
+
 bool Machine::ready() const noexcept {
     return result_.has_value();
 }
@@ -117,15 +121,15 @@ product_t Machine::yield() {
 simtime_t Machine::enqueue(product_t product) {
     queue_time_ += optimes_.at(product.type);
     queue_.push(std::move(product));
-    return queue_time_;
+    return std::max(queue_time_, last_tick_);
 }
 
 simtime_t Machine::current_processing_time() const noexcept {
-    return current_processing_till_;
+    return std::max(current_processing_till_, last_tick_);
 }
 
 simtime_t Machine::queue_time() const noexcept {
-    return queue_time_;
+    return std::max(queue_time_, last_tick_);
 }
 
 size_t Machine::queue_size() const noexcept {
