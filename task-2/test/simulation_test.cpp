@@ -298,37 +298,29 @@ TEST(SimulationBlackBoxTests, RunLeavesEmptyWorkshopAtZero) {
     EXPECT_TRUE(simulation.finished());
 }
 
-TEST(SimulationBlackBoxTests, AdvanceToNextEventChoosesNearestProcessingCompletion) {
+TEST(SimulationBlackBoxTests, NextAdvancesToNearestProcessingCompletion) {
     std::ostringstream output;
     Simulation simulation{
         {make_machine(0, {{.index = 0, .type = 0}}, {5}), make_machine(1, {{.index = 1, .type = 0}}, {2})}, 2, output};
-    ASSERT_FALSE(simulation.machines_[0].start());
-    ASSERT_FALSE(simulation.machines_[1].start());
 
-    simulation.advance_to_next_event();
+    simulation.next();
 
     EXPECT_EQ(simulation.tick_, 2);
+    ASSERT_EQ(simulation.machines_.size(), 2);
+    EXPECT_TRUE(simulation.machines_[0].processing());
+    EXPECT_TRUE(simulation.machines_[1].processing());
+    EXPECT_EQ(simulation.machines_[0].current_processing_time(), 5);
+    EXPECT_EQ(simulation.machines_[1].current_processing_time(), 2);
 }
 
-TEST(SimulationBlackBoxTests, AdvanceToNextEventKeepsTickWhenNothingIsProcessing) {
+TEST(SimulationBlackBoxTests, NextKeepsTickWhenInitialWorkFinishesInstantly) {
     std::ostringstream output;
-    Simulation simulation{{make_machine(0, {}, {5})}, 2, output};
-    simulation.tick_ = 42;
+    Simulation simulation{{make_machine(0, {{.index = 0, .type = 0}}, {0})}, 2, output};
 
-    simulation.advance_to_next_event();
+    simulation.next();
 
-    EXPECT_EQ(simulation.tick_, 42);
-}
-
-TEST(SimulationBlackBoxTests, LogMethodsAreCallableForValidValues) {
-    std::ostringstream output;
-    Simulation simulation{{make_machine(0, {}, {1})}, 2, output};
-
-    EXPECT_NO_THROW(simulation.log_start(1, 2, 0, 0));
-    EXPECT_NO_THROW(simulation.log_finish(2, 2, 0, 0));
-    EXPECT_NO_THROW(simulation.log_wait(2, 2, 1, 0, 3));
-    EXPECT_NO_THROW(simulation.log_ready(3, 2, 0));
-    EXPECT_NO_THROW(simulation.log_stop(4));
+    EXPECT_EQ(simulation.tick_, 0);
+    EXPECT_TRUE(simulation.finished());
 }
 
 }  // namespace
