@@ -9,8 +9,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 include(FetchContent)
-add_subdirectory(app)
 add_subdirectory(src)
+add_subdirectory(app)
 
 if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND BUILD_TESTING)
     add_subdirectory(test)
