@@ -30,17 +30,18 @@ class Machine final {
     /**
      * @brief Starts processing of item in queue
      * 
-     * @param now Current simulation time
      * @exception std::logic_error Some item is already is processed
+     * @exception std::logic_error Output slot is full
      * @exception std::out_of_range No items are present in the queue
      * @return true Item was instantly processed
      * @return false Item processing is in progress
      */
-    bool start(simtime_t now);
+    bool start();
 
     /**
-     * @brief Processes tick of the simulation
+     * @brief Advances time of the machine to certain point and updates state
      * 
+     * @exception std::logic_error On impossible action
      * @param now Current simulation time
      * @return true Resource is ready
      * @return false Resource is not ready or no operations are present
@@ -54,6 +55,14 @@ class Machine final {
      * @return false Item is not ready or no operations are present
      */
     [[nodiscard]] bool ready() const noexcept;
+
+    /**
+     * @brief Checks if machine is idle
+     * 
+     * @return true Machine does no work
+     * @return false Machine is processing some item
+     */
+    [[nodiscard]] bool idle() const noexcept;
 
     /**
      * @brief Checks if some item is processed right now
@@ -80,16 +89,31 @@ class Machine final {
     simtime_t enqueue(product_t product);
 
     /**
+     * @brief Returns time when current item would be processed
+     * 
+     * @return simtime_t Time of item to process
+     */
+    [[nodiscard]] simtime_t current_processing_time() const noexcept;
+
+    /**
      * @brief Gets time when the machine would process all the items
      * 
      * @return simtime_t Simulation time when machine would process all the items
      */
-    [[nodiscard]] simtime_t processing_till() const noexcept;
+    [[nodiscard]] simtime_t queue_time() const noexcept;
+
+    /**
+     * @brief Returns total queue size for current machine
+     * 
+     * @return size_t Amount of items in queue
+     */
+    [[nodiscard]] size_t queue_size() const noexcept;
 
    private:
     machine_t index_;                                       ///< Index of the machine
     simtime_t current_processing_till_{};                   ///< Time point till current processing is performed
-    simtime_t processing_till_{};                           ///< Time point till machine has processes to perform
+    simtime_t queue_time_{};                                ///< Time point till machine has processes to perform
+    simtime_t last_tick_{};                                 ///< Last tick time
     std::optional<product_t> current_{std::nullopt};        ///< Current product in process
     std::optional<product_t> result_{std::nullopt};         ///< Result of the processing
     std::queue<product_t> queue_;                           ///< Queue of items to process

@@ -12,14 +12,17 @@ Machine::Machine(machine_t index, const std::vector<product_t> &products,
     if (products.empty()) {
         return;
     }
-    current_processing_till_ = optimes_.at(products.front().type);
     for (const auto &it : products) {
-        processing_till_ += optimes_.at(it.type);
+        queue_time_ += optimes_.at(it.type);
     }
     queue_ = std::queue(std::deque<product_t>(products.begin(), products.end()));
 }
 
-bool Machine::start(simtime_t now) {
+machine_t Machine::index() const noexcept {
+    return index_;
+}
+
+bool Machine::start() {
     if (current_.has_value()) {
         throw std::logic_error("Machine is already processing item");
     }
@@ -37,23 +40,30 @@ bool Machine::start(simtime_t now) {
         result_ = std::move(product);
         return true;
     }
-    current_processing_till_ = now + processing_time;
+    current_processing_till_ = last_tick_ + processing_time;
     current_ = std::move(product);
 
     return false;
 }
 
 bool Machine::tick(simtime_t now) {
-    if (!queue_.empty() && !processing()) {
-        ++processing_till_;
+    if (last_tick_ >= now) {
+        throw std::logic_error("Machine cannot tick backward in time");
+    }
+    simtime_t diff = now - last_tick_;
+    last_tick_ = now;
+
+    if (idle()) {
+        queue_time_ += diff;
+        return ready();
     }
 
-    processing_till_ = std::max(processing_till_, now);
-    current_processing_till_ = std::max(processing_till_, now);
-
-    if (processing_till_ <= now) {
+    if (current_processing_till_ <= now) {
+        diff = now - current_processing_till_;
+        upgrade_product(*current_);
         result_ = std::move(current_);
         current_ = std::nullopt;
+        queue_time_ += diff;
     }
 
     return ready();
@@ -61,6 +71,10 @@ bool Machine::tick(simtime_t now) {
 
 bool Machine::ready() const noexcept {
     return result_.has_value();
+}
+
+bool Machine::idle() const noexcept {
+    return !current_.has_value();
 }
 
 bool Machine::processing() const noexcept {
@@ -77,13 +91,21 @@ product_t Machine::yield() {
 }
 
 simtime_t Machine::enqueue(product_t product) {
-    processing_till_ += optimes_.at(product.type);
+    queue_time_ += optimes_.at(product.type);
     queue_.push(std::move(product));
-    return processing_till_;
+    return queue_time_;
 }
 
-simtime_t Machine::processing_till() const noexcept {
-    return processing_till_;
+simtime_t Machine::current_processing_time() const noexcept {
+    return current_processing_till_;
+}
+
+simtime_t Machine::queue_time() const noexcept {
+    return queue_time_;
+}
+
+size_t Machine::queue_size() const noexcept {
+    return queue_.size();
 }
 
 }  // namespace sim
