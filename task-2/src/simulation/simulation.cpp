@@ -1,10 +1,12 @@
 #include "simulation/simulation.hpp"
+
+#include "simulation/machine.hpp"
+#include "simulation/types.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <utility>
 #include <vector>
-#include "simulation/machine.hpp"
-#include "simulation/types.hpp"
 
 namespace sim {
 

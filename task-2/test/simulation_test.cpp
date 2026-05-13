@@ -1,14 +1,17 @@
 #include <gtest/gtest.h>
+
+#define private public
+#define protected public
+#include "simulation/machine.hpp"
+#include "simulation/simulation.hpp"
+#include "simulation/types.hpp"
+#undef protected
+#undef private
+
 #include <sstream>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include "simulation/machine.hpp"
-#define private public
-#include "simulation/simulation.hpp"
-#undef private
-#include "simulation/types.hpp"
 
 namespace sim {
 namespace {

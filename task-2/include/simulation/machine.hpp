@@ -1,9 +1,10 @@
 #pragma once
 
+#include "simulation/types.hpp"
+
 #include <optional>
 #include <queue>
 #include <unordered_map>
-#include "simulation/types.hpp"
 
 namespace sim {
 

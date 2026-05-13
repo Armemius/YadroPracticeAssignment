@@ -1,10 +1,11 @@
 #include <gtest/gtest.h>
+
+#include "simulation/machine.hpp"
+#include "simulation/types.hpp"
+
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
-#include "simulation/types.hpp"
-
-#include "simulation/machine.hpp"
 
 namespace sim {
 namespace {

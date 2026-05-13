@@ -1,13 +1,14 @@
 #pragma once
 
+#include "simulation/machine.hpp"
+#include "simulation/types.hpp"
+
 #include <functional>
 #include <ostream>
 #include <queue>
 #include <set>
 #include <utility>
 #include <vector>
-#include "simulation/machine.hpp"
-#include "simulation/types.hpp"
 
 namespace sim {
 

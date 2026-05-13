@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
 
-#include <sstream>
-#include <string>
-#include <utility>
-
 #define private public
 #include "parser/parser.hpp"
 #undef private
+
+#include <sstream>
+#include <string>
+#include <utility>
 
 namespace parser {
 namespace {

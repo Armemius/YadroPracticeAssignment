@@ -1,5 +1,9 @@
 #include "parser/parser.hpp"
 
+#include "simulation/machine.hpp"
+#include "simulation/simulation.hpp"
+#include "simulation/types.hpp"
+
 #include <charconv>
 #include <cstdint>
 #include <sstream>
@@ -8,10 +12,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include "simulation/machine.hpp"
-#include "simulation/simulation.hpp"
-#include "simulation/types.hpp"
 
 namespace parser {
 
