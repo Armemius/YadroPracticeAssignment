@@ -144,6 +144,10 @@ TEST(SimulationBlackBoxTests, ConstructorStoresInitialStateWithoutStartingWork) 
     EXPECT_EQ(simulation.machines_[1].queue_size(), 0);
     EXPECT_TRUE(simulation.machines_[0].idle());
     EXPECT_TRUE(simulation.machines_[1].idle());
+    EXPECT_EQ(simulation.wait_index_.size(), 2);
+    EXPECT_EQ(*simulation.wait_index_.begin(), (std::pair<simtime_t, machine_t>{0, 1}));
+    EXPECT_TRUE(simulation.finish_events_.empty());
+    EXPECT_EQ(simulation.machine_versions_, (std::vector<uint64_t>{0, 0}));
 }
 
 TEST(SimulationBlackBoxTests, FinishedReturnsTrueOnlyWhenEveryMachineHasNoWork) {
@@ -185,6 +189,8 @@ TEST(SimulationBlackBoxTests, NextStartsAllInitiallyAvailableMachinesAndJumpsToN
     EXPECT_EQ(simulation.machines_[0].current_processing_time(), 5);
     EXPECT_EQ(simulation.machines_[1].current_processing(), (product_t{.index = 1, .type = 0}));
     EXPECT_EQ(simulation.machines_[1].current_processing_time(), 2);
+    EXPECT_EQ(simulation.finish_events_.size(), 2);
+    EXPECT_EQ(simulation.machine_versions_, (std::vector<uint64_t>{1, 1}));
 }
 
 TEST(SimulationBlackBoxTests, NextFinishesCurrentItemAndStartsNextQueuedItem) {
@@ -200,6 +206,7 @@ TEST(SimulationBlackBoxTests, NextFinishesCurrentItemAndStartsNextQueuedItem) {
     EXPECT_FALSE(simulation.machines_[0].ready());
     EXPECT_EQ(simulation.machines_[0].queue_size(), 0);
     EXPECT_EQ(simulation.machines_[0].current_processing(), (product_t{.index = 1, .type = 0}));
+    EXPECT_EQ(*simulation.wait_index_.begin(), (std::pair<simtime_t, machine_t>{0, 0}));
 }
 
 TEST(SimulationBlackBoxTests, NextRoutesNonFinalProductToSelectedIdleMachine) {
@@ -233,6 +240,7 @@ TEST(SimulationBlackBoxTests, NextQueuesRoutedProductWhenSelectedMachineIsBusy) 
     EXPECT_EQ(simulation.machines_[1].current_processing(), (product_t{.index = 2, .type = 1}));
     EXPECT_EQ(simulation.machines_[1].queue_size(), 1);
     EXPECT_EQ(simulation.machines_[1].next_item(), (product_t{.index = 0, .type = 1}));
+    EXPECT_EQ(*simulation.wait_index_.begin(), (std::pair<simtime_t, machine_t>{0, 0}));
 }
 
 TEST(SimulationBlackBoxTests, NextProcessesInstantCascadeBeforeReturning) {
