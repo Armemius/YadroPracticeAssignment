@@ -172,5 +172,28 @@ TEST(MachineTests, RejectsToStartImmediateProcessingWhenQueueIsNotEmpty) {
     EXPECT_THROW(machine.start({0, 0}), std::logic_error);
 }
 
+TEST(MachineTests, CorrectlyShowsProcessedItems) {
+    Machine machine = create_machine(42);
+    machine.start();
+    EXPECT_EQ(machine.current_processing(), (product_t{.index = 0, .type = 0}));
+}
+
+TEST(MachineTests, CorrectlyShowsNextItesmToProcess) {
+    Machine machine = create_machine(42);
+    EXPECT_EQ(machine.next_item(), (product_t{.index = 0, .type = 0}));
+    machine.start();
+    EXPECT_EQ(machine.next_item(), (product_t{.index = 1, .type = 1}));
+}
+
+TEST(MachineTests, RejectsShowingProcessedItemIfNoAvailable) {
+    Machine machine = create_machine(42);
+    EXPECT_THROW((void)machine.current_processing(), std::out_of_range);
+}
+
+TEST(MachineTests, RejectsShowingNextProcessedItemIfNoAvailable) {
+    Machine machine = create_empty_machine(42);
+    EXPECT_THROW((void)machine.next_item(), std::out_of_range);
+}
+
 }  // namespace
 }  // namespace sim
