@@ -1,0 +1,306 @@
+---
+name: CI
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: clang-format ${{ matrix.task }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: task-1
+            working_directory: task-1
+          - task: task-2
+            working_directory: task-2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-18
+
+      - name: Check formatting
+        working-directory: ${{ matrix.working_directory }}
+        run: |
+          find app include src test \
+            -type f \( \
+              -name '*.c' -o \
+              -name '*.cc' -o \
+              -name '*.cpp' -o \
+              -name '*.cxx' -o \
+              -name '*.h' -o \
+              -name '*.hpp' -o \
+              -name '*.hxx' \
+            \) \
+            -print0 | xargs -0 clang-format-18 --dry-run --Werror
+
+  build-test:
+    name: ${{ matrix.task }} ${{ matrix.compiler }} ${{ matrix.preset }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: task-1
+            working_directory: task-1
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+          - task: task-1
+            working_directory: task-1
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+          - task: task-1
+            working_directory: task-1
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+          - task: task-1
+            working_directory: task-1
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+          - task: task-2
+            working_directory: task-2
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+          - task: task-2
+            working_directory: task-2
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+          - task: task-2
+            working_directory: task-2
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+          - task: task-2
+            working_directory: task-2
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ clang
+
+      - name: Configure
+        working-directory: ${{ matrix.working_directory }}
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        working-directory: ${{ matrix.working_directory }}
+        run: cmake --build --preset ${{ matrix.build_preset }} --parallel
+
+      - name: Test
+        working-directory: ${{ matrix.working_directory }}
+        run: ctest --preset ${{ matrix.test_preset }}
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.task }}-${{ matrix.compiler }}-${{ matrix.preset }}
+          path: >-
+            ${{ matrix.working_directory }}/.build/${{ matrix.preset }}/app/task
+          if-no-files-found: error
+
+  msvc-build-test:
+    name: ${{ matrix.task }} msvc ${{ matrix.preset }}
+    runs-on: windows-2022
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: task-1
+            workdir: task-1
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+            artifact: task-1/.build/ci-debug/app/task*.exe
+          - task: task-1
+            workdir: task-1
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+            artifact: task-1/.build/ci-release/app/task*.exe
+          - task: task-2
+            workdir: task-2
+            preset: ci-debug
+            build_preset: build-ci-debug
+            test_preset: test-ci-debug
+            artifact: task-2/.build/ci-debug/app/task*.exe
+          - task: task-2
+            workdir: task-2
+            preset: ci-release
+            build_preset: build-ci-release
+            test_preset: test-ci-release
+            artifact: task-2/.build/ci-release/app/task*.exe
+
+    env:
+      CC: cl
+      CXX: cl
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        working-directory: ${{ matrix.workdir }}
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        working-directory: ${{ matrix.workdir }}
+        run: cmake --build --preset ${{ matrix.build_preset }} --parallel
+
+      - name: Test
+        working-directory: ${{ matrix.workdir }}
+        run: ctest --preset ${{ matrix.test_preset }}
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.task }}-msvc-${{ matrix.preset }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error
+
+  static-analysis:
+    name: clang-tidy ${{ matrix.task }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: task-1
+            working_directory: task-1
+          - task: task-2
+            working_directory: task-2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install analysis tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang clang-tidy
+
+      - name: Configure
+        working-directory: ${{ matrix.working_directory }}
+        run: cmake --preset ci-debug
+
+      - name: Analyze
+        working-directory: ${{ matrix.working_directory }}
+        run: |
+          mapfile -d '' sources < <(
+            find app src test \
+              -type f \( \
+                -name '*.cc' -o \
+                -name '*.cpp' -o \
+                -name '*.cxx' \
+              \) \
+              -print0
+          )
+
+          clang-tidy \
+            -p .build/ci-debug \
+            --header-filter='^'"$PWD"'/(app|include|src|test)/' \
+            "${sources[@]}"
+
+  sanitizers:
+    name: ASan/UBSan ${{ matrix.task }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: task-1
+            working_directory: task-1
+          - task: task-2
+            working_directory: task-2
+
+    env:
+      ASAN_OPTIONS: >-
+        detect_leaks=0:strict_string_checks=1:check_initialization_order=1
+      UBSAN_OPTIONS: print_stacktrace=1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++
+
+      - name: Configure
+        working-directory: ${{ matrix.working_directory }}
+        run: cmake --preset ci-sanitizers
+
+      - name: Build
+        working-directory: ${{ matrix.working_directory }}
+        run: cmake --build --preset build-ci-sanitizers --parallel
+
+      - name: Test
+        working-directory: ${{ matrix.working_directory }}
+        run: ctest --preset test-ci-sanitizers
