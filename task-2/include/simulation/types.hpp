@@ -1,5 +1,6 @@
 #pragma once
 
+#include <compare>
 #include <cstdint>
 
 namespace sim {
@@ -14,6 +15,8 @@ using product_index_t = uint32_t;
 struct Product {
     product_index_t index;
     product_type_t type;
+
+    friend std::strong_ordering operator<=>(const Product &lhs, const Product &rhs) = default;
 };
 
 /// Product state
