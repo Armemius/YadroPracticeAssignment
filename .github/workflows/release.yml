@@ -1,0 +1,229 @@
+---
+name: Release
+
+"on":
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to create or update
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  source-archives:
+    name: Source archives
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create source archives
+        run: |
+          mkdir -p release
+
+          tar \
+            --exclude='task-1/.build' \
+            --exclude='*/__pycache__' \
+            --exclude='*.pyc' \
+            -czf release/task-1.tar.gz \
+            task-1
+
+          tar \
+            --exclude='task-2/.build' \
+            --exclude='*/__pycache__' \
+            --exclude='*.pyc' \
+            -czf release/task-2.tar.gz \
+            task-2
+
+      - name: Upload source archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-sources
+          path: release/*.tar.gz
+          if-no-files-found: error
+
+  build-executables:
+    name: ${{ matrix.task }} ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: task-1
+            workdir: task-1
+            platform: linux-x86_64
+            os: ubuntu-24.04
+            cc: gcc
+            cxx: g++
+            asset: task-1-linux-x86_64
+          - task: task-2
+            workdir: task-2
+            platform: linux-x86_64
+            os: ubuntu-24.04
+            cc: gcc
+            cxx: g++
+            asset: task-2-linux-x86_64
+          - task: task-1
+            workdir: task-1
+            platform: macos-x86_64
+            os: macos-15-intel
+            cc: clang
+            cxx: clang++
+            asset: task-1-macos-x86_64
+          - task: task-2
+            workdir: task-2
+            platform: macos-x86_64
+            os: macos-15-intel
+            cc: clang
+            cxx: clang++
+            asset: task-2-macos-x86_64
+          - task: task-1
+            workdir: task-1
+            platform: windows-x86_64
+            os: windows-2022
+            cc: cl
+            cxx: cl
+            asset: task-1-windows-x86_64.exe
+          - task: task-2
+            workdir: task-2
+            platform: windows-x86_64
+            os: windows-2022
+            cc: cl
+            cxx: cl
+            asset: task-2-windows-x86_64.exe
+
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux build tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++
+
+      - name: Configure MSVC
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Check build tools
+        run: |
+          cmake --version
+          ninja --version
+
+      - name: Configure
+        working-directory: ${{ matrix.workdir }}
+        run: cmake --preset ci-release
+
+      - name: Build
+        working-directory: ${{ matrix.workdir }}
+        run: cmake --build --preset build-ci-release --parallel
+
+      - name: Test
+        working-directory: ${{ matrix.workdir }}
+        run: ctest --preset test-ci-release
+
+      - name: Package executable
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p release
+          cp "${{ matrix.workdir }}/.build/ci-release/app/task" \
+            "release/${{ matrix.asset }}"
+          chmod +x "release/${{ matrix.asset }}"
+
+      - name: Package executable
+        if: runner.os == 'Windows'
+        run: |
+          New-Item -ItemType Directory -Force release
+          Copy-Item `
+            "${{ matrix.workdir }}\.build\ci-release\app\task.exe" `
+            "release\${{ matrix.asset }}"
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.asset }}
+          path: release/${{ matrix.asset }}
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    runs-on: ubuntu-24.04
+    needs:
+      - source-archives
+      - build-executables
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Resolve release tag
+        id: release
+        env:
+          DISPATCH_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            tag="$DISPATCH_TAG"
+          else
+            tag="$GITHUB_REF_NAME"
+          fi
+
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+
+      - name: List release assets
+        run: find release -maxdepth 1 -type f -print | sort
+
+      - name: Create or update GitHub release
+        env:
+          TAG_NAME: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          assets=(release/*)
+          if (( ${#assets[@]} == 0 )); then
+            echo "No release assets were downloaded" >&2
+            exit 1
+          fi
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" "${assets[@]}" --clobber
+            exit 0
+          fi
+
+          create_args=(
+            gh release create "$TAG_NAME"
+            "${assets[@]}"
+            --title "$TAG_NAME"
+            --notes "Release $TAG_NAME"
+          )
+
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            create_args+=(--verify-tag)
+          else
+            create_args+=(--target "$GITHUB_SHA")
+          fi
+
+          "${create_args[@]}"
