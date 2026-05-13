@@ -1,8 +1,10 @@
 #include "simulation/machine.hpp"
+
+#include "simulation/types.hpp"
+
 #include <optional>
 #include <queue>
 #include <stdexcept>
-#include "simulation/types.hpp"
 
 namespace sim {
 
